@@ -1,0 +1,6 @@
+HAWC/
+*.pyc
+xcdf/
+libxcdf.so
+.idea/
+*.npy
