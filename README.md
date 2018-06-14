@@ -37,8 +37,8 @@ Here are some visualizations of data from our dataset:
 <img src="./plots/ground_truth/ground_truth_mapping_gamma_log.png" width="600px"/>
 <img src="./plots/ground_truth/ground_truth_mapping_gamma_pmts.png" width="600px"/>
 
-### Deep learning Models and Experiments
-## Generative Model with Pixel-cnn
+## Deep learning Models and Experiments
+### Generative Model with Pixel-cnn
 We can use a pixel-cnn model to generate very realistic PMT grid hit data.
 
 To run pixelcnn on the 40x40 images generated from above, run
