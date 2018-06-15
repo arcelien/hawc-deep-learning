@@ -10,27 +10,33 @@ import scipy.interpolate
 import scipy.ndimage
 import plot
 
-# generate dataset of basic features of events
-def gen_gamma_4(path="./HAWC/"):
+#generate dataset of basic features of events
+def gen_gamma_params(path="./HAWC/"):
     path = os.path.join(path, 'gamma/*.xcd')
     print(path)
     files = glob(path)
     print(files)
     total_data = []
-    # iterate over each .xcd file to get a portion of the dataset
     for xcdf_file in files:
         print(xcdf_file)
         xf = XCDFFile(xcdf_file)
         data = []
-        params = "angleFit.theta, rec.azimuthAngle, rec.logNPE, rec.nHit"
-        # pull set of parameters one at a time, as a list
+        params = "rec.logNPE, rec.nHit, rec.nTankHit, rec.zenithAngle, rec.azimuthAngle, rec.coreX, rec.coreY, rec.CxPE40PMT"
+        # For conditional
+        # params = "rec.logNPE, rec.nHit, rec.nTankHit, rec.zenithAngle, rec.azimuthAngle, rec.coreX, rec.coreY, rec.CxPE40PMT, \
+        # SimEvent.energyTrue, SimEvent.thetaTrue, SimEvent.phiTrue"
         for param in xf.fields(params):
-            data.append(param)
+            if abs(param[3] - np.pi) > .01:
+                data.append(param)
         total_data.extend(data)
     total_data = np.array(total_data, dtype=np.float32)
-    assert total_data.shape == (75570, 4)
+    # Simple data augmentation
+    total_data[:, 1] = np.log(total_data[:, 1]) # Take the log of rec.nHit
+    # total_data[:, 8] = np.log(total_data[:, 8]) # For conditional only
+    assert total_data.shape == (total_data.shape[0], 8)
     print("shuffling")
     np.random.shuffle(total_data)
+    print(total_data[:15, :])
     np.save("gamma_data", total_data)
 
 #
@@ -238,6 +244,7 @@ def get_layout(path="./HAWC/", sub='gamma/'):
 
 
 if __name__ == "__main__":
+    # Generate data for images
     if len(sys.argv) > 1:
         path = sys.argv[1]
         gen_images_mapping(path)
@@ -246,3 +253,5 @@ if __name__ == "__main__":
             print("generating mapping of grid IDs to x/y/z coordinates")
             get_layout()
         gen_images_mapping("./HAWC/", display=False, two_dims=True, small=False, normalize=True) #path="/home/danny/HAWC/", display=False)
+    # Generate data for 1D distributions
+    gen_gamma_params("./HAWC/")
