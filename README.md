@@ -38,11 +38,23 @@ Here are some visualizations of data from our dataset:
 <img src="./plots/ground_truth/ground_truth_mapping_gamma_pmts.png" width="600px"/>
 
 ## Deep learning Models and Experiments
+### 1D Distribution Generation with Non-Conditional GANs
+Using GANs we can feed in a nosie vector into a generator and get a output vector where each element is a sample from some distribution. 
+
+To run param-gen/parameterGAN.py, run gen_gamma_params("/path/to/gamma") in parse_hawc and specifcy paramters to collect in the function. Then run in param-gen/: 
+
+```bash
+python parameterGAN.py
+```
+Histograms for the generated and actual distributions will be written to the paramGANplots folder in the same directory. An example of a generated histogram is shown below.
+
+<img src="./plots/1DGAN/1Dhist.png" width="600px"/>
+
 ### Generative Model with Pixel-cnn
 We can use a pixel-cnn model to generate very realistic PMT grid hit data.
 
 To run pixelcnn on the 40x40 images generated from above, run
-``` bash
+```bash
 cd pixel-cnn
 sh scripts/train.sh
 ```
