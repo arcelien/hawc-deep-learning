@@ -42,8 +42,9 @@ def plot_hists(grid):
 # if 1 dim: raw 40x40 grid, grid of pmts, single pmts
 # if 2 dim: 40x40 grid side by side, grid of pmts side by side
 #
-def plot_tanks_from_grid(path="./HAWC/", sub="saves/", num=2):
-    grid = os.path.join(path, sub, "hawc_sample"+str(num)+".npz")
+def plot_tanks_from_grid(path="./HAWC/", sub="saves/", num=2, dim=1):
+    prefix = "2" if dim==2 else ""
+    grid = os.path.join(path, sub, "hawc" + prefix +"_sample"+str(num)+".npz")
     grid = np.load(grid)['arr_0']
     plot_40x40(grid, 'pixelcnn pmt hits - 40x40 grid, log(charge)')
     plot_pmts(grid, 'pixelcnn pmt hits - log(charge)')
@@ -58,7 +59,9 @@ def plot_40x40(grid, title):
         if grid.shape[3] == 1:
             plt.imshow(grid[i][:, :, 0])
         elif grid.shape[3] == 2:
-            plt.title('event %f, dim %i' % (i // 2, i % 2))
+            plt.title('event %i, dim %i' % (i // 2, i % 2))
+            if i % 2 == 1:
+                grid[i // 2][:, :, i % 2] = np.clip(grid[i//2][:,:,i%2], 50, 150)
             plt.imshow(grid[i // 2][:, :, i % 2])
         plt.colorbar()
     fig.suptitle(title)
@@ -110,4 +113,4 @@ def plot_pmts(grid, title, single=None, sparse=False):
 
 if __name__ == "__main__":
     import sys
-    plot_tanks_from_grid(num=sys.argv[1])
+    plot_tanks_from_grid(num=sys.argv[1], dim=2)

@@ -56,6 +56,7 @@ def gen_images_mapping(path="./HAWC/", sub='gamma/', display=False, log=True, tr
             # first dim = charge, second dim = time
             if two_dims:
                 grid = np.zeros((40, 40, 2))
+                grid[:,:,1] = np.full((40, 40), -500.)
             else:
                 grid = np.zeros((40, 40, 1))
             for c, gid, t in zip(charge, gridid, time):
@@ -64,7 +65,7 @@ def gen_images_mapping(path="./HAWC/", sub='gamma/', display=False, log=True, tr
                     # smallest charge is 0.1, anything smaller is 0, so we can take a safe log
                     if log: c = max(np.log(c + 1e-8) + 2.302585, 0.)
                     grid[coorsq[0], coorsq[1], 0] = c
-                    if two_dims: grid[coorsq[0], coorsq[1], 1] = t if not np.isclose(c, 0) else 0.
+                    if two_dims: grid[coorsq[0], coorsq[1], 1] = t if not np.isclose(c, 0) else 500.
             # grid /= max(grid.flatten())
             total_data.append(grid)
             labels.append([zen, azi])
@@ -89,13 +90,14 @@ def gen_images_mapping(path="./HAWC/", sub='gamma/', display=False, log=True, tr
         # dims.append(-1. + 2. * (total_data[:,:,:,0] - min_vals[0]) / (max_vals[0] - min_vals[0]))
         dims.append(total_data[:,:,:,0] * 255. / max_vals[0]) # we normalize to [0, 255]
         if two_dims:
-            assert False, "not computed yet for [0, 255]"
-            dims.append(-1. + 2. * (total_data[:,:,:,1] - min_vals[1]) / (max_vals[1] - min_vals[1]))
+            # assert False, "not computed yet for [0, 255]"
+            # dims.append(-1. + 2. * (total_data[:,:,:,1] - min_vals[1]) / (max_vals[1] - min_vals[1]))
+            dims.append(255. * (total_data[:,:,:,1] - min_vals[1]) / (max_vals[1] - min_vals[1]))
         print(dims[0].shape)
-        # sanity check for [-1, 1] normalization
-        # for d in dims:
-        #     assert np.amax(d) <= 1.01, np.amax(d)
-        #     assert np.amin(d) >= -1.01, np.amin(d)
+        # sanity check for normalization
+        for d in dims:
+            assert np.amax(d) <= 255.01, np.amax(d)
+            assert np.amin(d) >= -0.01, np.amin(d)
         total_data = np.stack(dims, axis=3)
     print("shuffling")
     np.random.seed(0)
@@ -243,4 +245,4 @@ if __name__ == "__main__":
         if not os.path.exists("./data/layout.npy"):
             print("generating mapping of grid IDs to x/y/z coordinates")
             get_layout()
-        gen_images_mapping("./HAWC/", display=False, two_dims=False, small=False, normalize=False) #path="/home/danny/HAWC/", display=False)
+        gen_images_mapping("./HAWC/", display=False, two_dims=True, small=False, normalize=True) #path="/home/danny/HAWC/", display=False)
