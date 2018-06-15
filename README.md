@@ -41,7 +41,7 @@ Here are some visualizations of data from our dataset:
 ### 1D Distribution Generation with Non-Conditional GANs
 Using GANs we can feed in a nosie vector into a generator and get a output vector where each element is a sample from some distribution. 
 
-To run param-gen/parameterGAN.py, run gen_gamma_params("/path/to/gamma") in parse_hawc and specifcy paramters to collect in the function. Then run in param-gen/: 
+To run param-gen/parameterGAN.py, run gen_gamma_params("/path/to/gamma") in parse_hawc and specifcy paramters to collect in the function. Then run in `param-gen/`: 
 
 ```bash
 python parameterGAN.py
