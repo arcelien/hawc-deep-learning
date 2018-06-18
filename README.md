@@ -3,7 +3,7 @@
 Deep learning models on HAWC simulation dataset
 
 ## Prerequisites
-- HAWC dataset should be downloaded and placed in main directory, `$HAWC`
+- A HAWC simulation dataset should be downloaded and placed in main directory, `$HAWC`
 - XCDF from https://github.com/jimbraun/XCDF should be complied
     - contents of the compiled `lib/` folder, `libxcdf.so` and `xcdf/`, should be placed in the main directory
     - If getting errors with `libxcdf.so`, add it's location to `$LD_LIBRARY_PATH`
