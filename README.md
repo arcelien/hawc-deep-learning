@@ -41,7 +41,7 @@ Here are some visualizations of data from our dataset:
 ### What is a GAN? A Physicists Primer Into Generative Models
 GAN is short for Generative Adversarial Neural Network, and it is part of a family of deep learning models called "Generative Models".  A GAN is composed of 3 parts; the generator G, the discriminator D, and the expert sample X.  Traditionally, the generator and discriminator are neural networks, while the expert sample is a sample of the distribution you are trying to mimic.  The generator network takes in a vector of random noise z (which it needs as an entropy source), and produces an output that has the same form as that of the expert sample, G(z).  The Discriminator takes in a sample (either from the generator, G(z), or the expert sample x), and returns the probability that the sample is a forgery from the generator.  The model parameters of the generator are tuned to minimize D(G(z)) while the parameters of the generator are turned to maximize D(G(z)) and minimize D(x).  The end result is a mathematical arms race between G and D (they are "adversaries"), which slowly moves the distribution G(z) closer and closer to the expert sample X.
 
-**diagram here**
+<img src="./plots/GANdiagram.jpg" width="600px"/>
 
 This is a fundamentally different approach to distribution sampling compared that employed by physicists, as no knowledge of the mathematical form of the expert distribution is needed.  The only requirement is that the expert sample is "large enough" to express the distribution.  What is and isn't "large enough" is a question that is the subject of ongoing research, so developing a functional GAN model requires some amount of numerical experimental work to be done.
 
