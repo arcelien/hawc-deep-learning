@@ -39,7 +39,7 @@ Here are some visualizations of data from our dataset:
 
 ## Deep learning Models and Experiments
 ### What is a GAN? A Physicists Primer Into Generative Models
-GAN is short for Generative Adversarial Neural Network, and it is part of a family of deep learning models called "Generative Models".  A GAN is composed of 3 parts; the generator G, the discriminator D, and the expert sample X.  Traditionally, the generator and discriminator are neural networks, while the expert sample is a sample of the distribution you are trying to mimic.  The generator network takes in a vector of random noise z (which it needs as an entropy source), and produces an output that has the same form as that of the expert sample, G(z).  The Discriminator takes in a sample (either from the generator, G(z), or the expert sample x), and returns the probability that the sample is a forgery from the generator.  The model parameters of the generator are tuned to minimize D(G(z)) while the parameters of the generator are turned to maximize D(G(z)) and minimize D(x).  The end result is a mathematical arms race between G and D (they are "adversaries"), which slowly moves the distribution G(z) closer and closer to the expert sample X.
+GAN is short for Generative Adversarial Neural Network, and it is part of a family of deep learning models called "Generative Models".  A GAN is composed of 3 parts; the generator G, the discriminator D, and the expert sample X.  Traditionally, the generator and discriminator are neural networks, while the expert sample is a sample of the distribution you are trying to mimic.  The generator network takes in a vector of random noise z (which it needs as an entropy source), and produces an output that has the same form as that of the expert sample, G(z).  The Discriminator takes in a sample (either from the generator, G(z), or the expert sample x), and returns the probability that the sample is a forgery from the generator.  The model parameters of the generator are tuned to minimize D(G(z)) while the parameters of the generator are turned to maximize D(G(z)) and minimize D(x).  The end result is a mathematical arms race between G and D (they are "adversaries"), which slowly moves the distribution G(z) closer and closer to the expert sample X.  You can learn more about GAN models here; https://github.com/hwalsuklee/tensorflow-generative-model-collections
 
 <img src="./plots/GANdiagram.jpg" width="600px"/>
 
@@ -47,7 +47,12 @@ This is a fundamentally different approach to distribution sampling compared tha
 
 A question that a physicist might ask is this; "Why are GANs useful?  How can a GAN help us learn something about physics?".  While it is true that a GAN can be expressed mathematically, the expression is not useful to a physicist.  Such an expression would take the form of something akin to a Fourier series, which doesn't nescissarily tell you anything useful about what's actually being described by the model.  To a physicist, knowing that some distribution is Gaussian or Poissonian is much more useful that being able to draw samples from it.  So why use GANs at all?
 
-The key is this;  physical simulations can be thought of as generative models
+The key is this;  most statistical physics simulations can be represented by a generative model.  The final output for a simulation might contain many reconstructed parameters, but only a few of those might be useful for analysis.  Those few parameters can be though of samples from a very high dimensional joint probability distribution.  A generative model can learn this joint distribution, and then generate new simulated events through sampling.
+
+For HAWC, this simulation pipeline is long, complex, and difficult to tune.  It takes roughly 11 days to run a full simulation of HAWC, from the generation of CORSIKA showers all the way to the final reconstruciton.  This is because HAWC is a high duty cycle, high statistics experiment.  In order for a simulation to be useful, HAWC requires enough simulated events to do a statistical analysis.  At the moment, "enough simulated events" is around 8 billion in total (3 billion each for gammas and protons, 1.3 billion ish for helium, and the rest are spread across the other primaries)
+
+GANs offer a significantly faster method for generating simulation events by leveraging the use of GPUs.
+
 ### 1D Distribution Generation with Non-Conditional GANs
 Using GANs we can feed in a noise vector into a generator and get a output vector where each element is a sample from some distribution. 
 
