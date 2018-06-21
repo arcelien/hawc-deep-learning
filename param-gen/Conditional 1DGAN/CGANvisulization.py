@@ -33,7 +33,7 @@ num_conds = 3
 ## Testing ##
 model = torch.load('./saved/Gepoch4000')  # Path to where saved generator model is 
 labels = {0: "rec.logNPE", 1: "log rec.nHit", 2: "rec.nTankHit", 3: "rec.zenith", 
-          4: "red.azimuth", 5: "rec.coreX", 6: "rec.coreY", 7: "rec.CxPE40PMT",
+          4: "red.azimuth", 5: "rec.coreX", 6: "rec.coreY", 7: "log rec.CxPE40",
           8: "log SimEvent.energyTrue", 9: "SimEvent.thetaTrue", 10:"SimEvent.phiTrue"}
 
 ## Loading Data ##
