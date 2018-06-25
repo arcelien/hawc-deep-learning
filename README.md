@@ -107,11 +107,11 @@ python plot.py [epoch number of checkpoint]
 ```
 Here is an example of generated samples from pixel-cnn. From inspection, it seems as if the pixel-cnn model learns to generate a distribution of samples that is representative of the varying sparsity between hits, and the smooth falloff of charge from a specific point indicative of gamma data.
 
-<img src="./plots/pixelcnn/pixelcnn_pmt_hit_logcharge_40x40.png" width="600px"/>
-<img src="./plots/pixelcnn/pixelcnn_pmt_hits_logcharge_pmts.png" width="600px"/>
+<img src="./plots/pixelcnn/pixelcnn_pmt_hit_logcharge_40x40.png" width="800px"/>
+<img src="./plots/pixelcnn/pixelcnn_pmt_hits_logcharge_pmts.png" width="800px"/>
 
 ### Two channel generation
 We then extend our pixel-cnn model to generate a simulation event including both the charge and hit time recorded at each PMT.
 
 Here is a visualization where the first channel is log charge, and the second is hit time (normalized).
-<img src="./plots/pixelcnn/pixelcnn_pmt_hit_two_dim.png" width="600px"/>
+<img src="./plots/pixelcnn/pixelcnn_pmt_hit_two_dim.png" width="1000px"/>
