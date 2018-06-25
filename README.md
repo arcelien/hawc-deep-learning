@@ -80,6 +80,10 @@ We also passed input values from the simulation directly to the generative model
 
 <img src="./plots/1DGAN/1dgan_reallabels.png" width="600px"/>
 
+Differences here, especially in the distributions with hard cutoffs, comes from a combination of using only gaussians as the input entropy source, and training time.  
+
+This model was trained to near completion in less than an hour on a GTX 1080 Ti
+
 ### 2D Distribution Generation with WGANs
 
 
