@@ -49,12 +49,12 @@ A question that a physicist might ask is this; "Why are GANs useful?  How can a 
 
 The key is this;  most statistical physics simulations can be represented by a generative model.  The final output for a simulation might contain many reconstructed parameters, but only a few of those might be useful for analysis.  Those few parameters can be though of samples from a very high dimensional joint probability distribution.  A generative model can learn this joint distribution, and then generate new simulated events through sampling.
 
-For HAWC, this simulation pipeline is long, complex, and difficult to tune.  It takes roughly 11 days to run a full simulation of HAWC, from the generation of CORSIKA showers all the way to the final reconstruciton.  This is because HAWC is a high duty cycle, high statistics experiment.  In order for a simulation to be useful, HAWC requires enough simulated events to do a statistical analysis.  At the moment, "enough simulated events" is around 8 billion in total (3 billion each for gammas and protons, 1.3 billion ish for helium, and the rest are spread across the other primaries)
+For HAWC, this simulation pipeline is long, complex, and difficult to tune.  It takes roughly 11 days to run a full simulation of HAWC, from the generation of CORSIKA showers all the way to the final reconstruciton.  This is because HAWC is a high duty cycle, high statistics experiment.  In order for a simulation to be useful, HAWC requires enough simulated events to do a statistical analysis.  At the moment, "enough simulated events" is around 8 billion in total (3 billion each for gammas and protons, 1.3 billion ish for helium, and the rest are spread across the other primaries).  The 1D and 2D generative models described below can be trained in hours on a small sample of the simulation.  The generation rate of events from these models is on the order of 100x faster than the simulation.  This measure is purely qualitative, as we did not have access to the actual simulation pipeline to do a proper timing study.
 
 GANs offer a significantly faster method for generating simulation events.  Only a sample of the simulation needs to be generated, and then a GAN can quickly generate the rest.
 
 ### 1D Distribution Generation with Non-Conditional GANs
-This GAN is a simple MLP model that has been trained exclusively on the gamma ray simulation.  It accepts a vector of random draws from an 8D standard spherical gaussian.  The output of this model is  rec.logNPE, log(rec.nHit), rec.nTankHit, rec.zenith, rec.azimuth, rec.coreX, rec.coreY, and rec.CxPE40.
+This GAN is a simple MLP (Multi Layer Perceptron) model that has been trained exclusively on the gamma ray simulation.  It accepts a vector of random draws from an 8D standard spherical gaussian.  The output of this model is  rec.logNPE, log(rec.nHit), rec.nTankHit, rec.zenith, rec.azimuth, rec.coreX, rec.coreY, and rec.CxPE40.
 
 To run param-gen/parameterGAN.py, run gen_gamma_params("/path/to/gamma") in parse_hawc and specifcy paramters to collect in the function. Then run in `param-gen/`: 
 
@@ -65,12 +65,24 @@ Histograms for the generated and actual distributions will be written to the par
 
 <img src="./plots/1DGAN/1Dhist.png" width="600px"/>
 
-This model trains to near completion in less than an hour on a GeForce GTX 180 Ti.
+This model trains to near completion in less than an hour on a GeForce GTX 1080 Ti.
 
 ### 1D Distribution Generation with Conditional GANs
-The 1D parameter GAN can be modified slightly, allowing for conditional inputs.  Along with the 8D entropy vector, another set of input parameters can be appended.  In this case, these parameters are log(SimEvent.energyTrue), SimEvent.thetaTrue, and SimEvent.phiTrue.  These values are also included as an input to the discriminator.  During training, the GAN samples the input params from the real simulation, and generates an output.  The sampled params and the generated output are passed to the discriminator.  
+The 1D parameter GAN can be modified slightly, allowing for conditional inputs.  Along with the 8D entropy vector, another set of input parameters can be appended.  In this case, these parameters are log(SimEvent.energyTrue), SimEvent.thetaTrue, and SimEvent.phiTrue.  These values are also included as an input to the discriminator.  During training, the GAN samples the input params from the real simulation, and generates an output.  The sampled params and the generated output are passed to the discriminator.  The output of this model is as before; rec.logNPE, log(rec.nHit), rec.nTankHit, rec.zenith, rec.azimuth, rec.coreX, rec.coreY, and rec.CxPE40.  
+
+To run this model, you should ... **to be added**
+
+The effects of the conditional inputs can be seen in the following tests.  First, we left the conditional variables free and sampled the inputs from uniform distributions.  This shows how much variation the generative model can express.
+
+<img src="./plots/1DGAN/1dgan_uniform labels.png" width="600px"/>
+
+We also passed input values from the simulation directly to the generative model, which illustrates just how well the model is able to capture the source distribution.
+
+<img src="./plots/1DGAN/1dgan_reallabels.png" width="600px"/>
 
 ### 2D Distribution Generation with WGANs
+
+
 ### Generative Model with Pixel-cnn
 We can use a pixel-cnn model to generate very realistic PMT grid hit data.
 
