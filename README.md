@@ -10,6 +10,11 @@ Deep learning models on HAWC simulation dataset
     - Make sure you're using python 2 and cython 2 with XCDF
 - Install python packages with `pip install -r requirements.txt` (preferably in a Conda or virtualenv environment)
 
+To download this repository, run 
+``` bash
+git clone --recurse-submodules https://github.com/arcelien/hawc-deep-learning.git
+```
+
 ## Overview
 ### Data Processing
 `parse_hawc.py` reads in data from the `$HAWC` folder and generates the training and testing datasets for our experiments.
@@ -85,10 +90,10 @@ Differences here, especially in the distributions with hard cutoffs, comes from 
 This model was trained to near completion in less than an hour on a GTX 1080 Ti
 
 ### 2D Distribution Generation with WGANs
-
+WIP
 
 ### Generative Model with Pixel-cnn
-We can use a pixel-cnn model to generate very realistic PMT grid hit data.
+We can use a pixel-cnn (https://arxiv.org/abs/1601.06759) model to generate very realistic PMT grid hit data.
 
 To run pixelcnn on the 40x40 images generated from above, run
 ```bash
@@ -104,3 +109,9 @@ Here is an example of generated samples from pixel-cnn. From inspection, it seem
 
 <img src="./plots/pixelcnn/pixelcnn_pmt_hit_logcharge_40x40.png" width="600px"/>
 <img src="./plots/pixelcnn/pixelcnn_pmt_hits_logcharge_pmts.png" width="600px"/>
+
+### Two channel generation
+We then extend our pixel-cnn model to generate a simulation event including both the charge and hit time recorded at each PMT.
+
+Here is a visualization where the first channel is log charge, and the second is hit time (normalized).
+<img src="./plots/pixelcnn/pixelcnn_pmt_hit_two_dim.png" width="600px"/>
