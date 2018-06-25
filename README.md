@@ -113,5 +113,7 @@ Here is an example of generated samples from pixel-cnn. From inspection, it seem
 ### Two channel generation
 We then extend our pixel-cnn model to generate a simulation event including both the charge and hit time recorded at each PMT.
 
+We ran the model on a NVIDIA Tesla V100 16GB GPU; training takes 2170 seconds per epoch (entire set of gamma images), and generation takes 272 seconds to generate a batch of 16. 
+
 Here is a visualization where the first channel is log charge, and the second is hit time (normalized).
 <img src="./plots/pixelcnn/pixelcnn_pmt_hit_two_dim.png" width="1000px"/>
