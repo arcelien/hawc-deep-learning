@@ -24,7 +24,7 @@ def gen_gamma_params(path="./HAWC/"):
         # Normal 1D (no conditional)
         # params = "rec.logNPE, rec.nHit, rec.nTankHit, rec.zenithAngle, rec.azimuthAngle, rec.coreX, rec.coreY, rec.CxPE40PMT"
         # For conditional
-        params = "rec.logNPE, rec.nHit, rec.nTankHit, rec.zenithAngle, rec.azimuthAngle, rec.coreX, rec.coreY, rec.CxPE40PMT, \
+        params = "rec.logNPE, rec.nHit, rec.nTankHit, rec.zenithAngle, rec.azimuthAngle, rec.coreX, rec.coreY, rec.CxPE40, \
         SimEvent.energyTrue, SimEvent.thetaTrue, SimEvent.phiTrue"
         for param in xf.fields(params):
             if abs(param[3] - np.pi) > .01:
@@ -33,6 +33,7 @@ def gen_gamma_params(path="./HAWC/"):
     total_data = np.array(total_data, dtype=np.float32)
     # Simple data augmentation
     total_data[:, 1] = np.log(total_data[:, 1]) # Take the log of rec.nHit
+    total_data[:, 7] = np.log(total_data[:, 7]+.01) # Take the log of rec.rec.CxPE40
     total_data[:, 8] = np.log(total_data[:, 8]) # For conditional only (Very important to have)
     assert total_data.shape == (total_data.shape[0], 11)  # 8 expected for no condition, 11 expected for conditional
     print("shuffling")

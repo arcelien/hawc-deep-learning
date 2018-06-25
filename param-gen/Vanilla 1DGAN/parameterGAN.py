@@ -68,7 +68,7 @@ dd = {'u': uniform, 'n': normal, 'e': exponential} 	# Dictionary of different di
 # latent   = [dd['n'](0, 1)] * 10 + [dd['n'](0, 1)] * 6 + [dd['e'](1)] * 4
 latent = [dd['n'](0, 1)] * z_dim			# Creates a latent space entirely sampled from N(0, 1)
 labels = {0: "rec.logNPE", 1: "log rec.nHit", 2: "rec.nTankHit", 3: "rec.zenith", 
-          4: "red.azimuth", 5: "rec.coreX", 6: "rec.coreY", 7: "rec.CxPE40PMT"}
+          4: "red.azimuth", 5: "rec.coreX", 6: "rec.coreY", 7: "log rec.CxPE40"}
 ## Sanity Checks ##
 assert z_dim >= Dimension
 assert z_dim == len(latent)
