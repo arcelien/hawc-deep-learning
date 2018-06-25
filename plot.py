@@ -46,7 +46,7 @@ def plot_tanks_from_grid(path="./HAWC/", sub="saves/", num=2, dim=1):
     prefix = "2" if dim==2 else ""
     grid = os.path.join(path, sub, "hawc" + prefix +"_sample"+str(num)+".npz")
     grid = np.load(grid)['arr_0']
-    plot_40x40(grid, 'pixelcnn pmt hits - 40x40 grid, log(charge)')
+    plot_40x40((grid + 1) * 127.5, 'pixelcnn pmt hits - 40x40 grid, log(charge)')
     plot_pmts(grid, 'pixelcnn pmt hits - log(charge)')
     for i in range(5, 16):
         plot_pmts(grid, 'pixelcnn pmt hits - log(charge) - single', single=i)
