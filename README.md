@@ -2,17 +2,28 @@
 
 Deep learning models on HAWC simulation dataset
 
+## Install conda if necessary
+```shell
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+sh ./Miniconda3-latest-Linux-x86_64.sh -b -p
+export PATH="$HOME/miniconda/bin:$PATH"
+
+conda create --name hawc python=2.7
+source activate hawc
+conda install cython matplotlib numpy scipy imageio pytorch torchvision cuda90 -c pytorch
+pip install tensorflow-gpu==1.8.0
+```
+
 ## Prerequisites
-- A HAWC simulation dataset should be downloaded and placed in main directory, `$HAWC`
-- XCDF from https://github.com/jimbraun/XCDF should be complied
-    - contents of the compiled `lib/` folder, `libxcdf.so` and `xcdf/`, should be placed in the main directory
-    - If getting errors with `libxcdf.so`, add it's location to `$LD_LIBRARY_PATH`
+- A HAWC simulation dataset should be downloaded and placed in `$HAWC`
+- XCDF from https://github.com/jimbraun/XCDF should be complied to `$XCDF`
+    - contents of the compiled `$XCDF/lib/` folder should be placed in the root directory, or link in `$LD_LIBRARY_PATH`
     - Make sure you're using python 2 and cython 2 with XCDF
-- Install python packages with `pip install -r requirements.txt` (preferably in a Conda or virtualenv environment)
 
 To download this repository, run 
-``` bash
+```shell
 git clone --recurse-submodules https://github.com/arcelien/hawc-deep-learning.git
+cd hawc-deep-learning
 ```
 
 ## Overview
@@ -20,8 +31,9 @@ git clone --recurse-submodules https://github.com/arcelien/hawc-deep-learning.gi
 `parse_hawc.py` reads in data from the `$HAWC` folder and generates the training and testing datasets for our experiments.
 
 To generate the dataset, run 
-``` bash
-python parse_hawc.py $HAWC
+```shell
+python parse_hawc.py --hawc-dir $HAWC --gen layout
+python parse_hawc.py --hawc-dir $HAWC --gen [one-channel-map or two-channel-map or one-dim]
 ``` 
 The dataset will be stored in `$HAWC/data`
 
@@ -96,14 +108,14 @@ WIP
 We can use a pixel-cnn (https://arxiv.org/abs/1601.06759) model to generate very realistic PMT grid hit data.
 
 To run pixelcnn on the 40x40 images generated from above, run
-```bash
+```shell
 cd pixel-cnn
-sh scripts/train.sh
+python train.py --save_dir $HAWC/saves --data_dir $HAWC/data --save_interval 3 --dataset [hawc1 or hawc2] (--nosample if no matplotlib)
 ```
 Checkpoints and output from pixelcnn will be located in `$HAWC/saves`, which can then be visualized with
 
-```bash
-python plot.py [epoch number of checkpoint]
+```shell
+python plot.py --num [epoch number of checkpoint] --chs [1 or 2]
 ```
 Here is an example of generated samples from pixel-cnn. From inspection, it seems as if the pixel-cnn model learns to generate a distribution of samples that is representative of the varying sparsity between hits, and the smooth falloff of charge from a specific point indicative of gamma data.
 
