@@ -17,10 +17,10 @@ def gen_gamma_params(path="./HAWC/"):
         xf = XCDFFile(xcdf_file)
         data = []
         # Normal 1D (no conditional)
-        # params = "rec.logNPE, rec.nHit, rec.nTankHit, rec.zenithAngle, rec.azimuthAngle, rec.coreX, rec.coreY, rec.CxPE40PMT"
+        params = "rec.logNPE, rec.nHit, rec.nTankHit, rec.zenithAngle, rec.azimuthAngle, rec.coreX, rec.coreY, rec.CxPE40"
         # For conditional
-        params = "rec.logNPE, rec.nHit, rec.nTankHit, rec.zenithAngle, rec.azimuthAngle, rec.coreX, rec.coreY, rec.CxPE40, \
-        SimEvent.energyTrue, SimEvent.thetaTrue, SimEvent.phiTrue"
+        # params = "rec.logNPE, rec.nHit, rec.nTankHit, rec.zenithAngle, rec.azimuthAngle, rec.coreX, rec.coreY, rec.CxPE40, \
+        # SimEvent.energyTrue, SimEvent.thetaTrue, SimEvent.phiTrue"
         for param in xf.fields(params):
             if abs(param[3] - np.pi) > .01:
                 data.append(param)

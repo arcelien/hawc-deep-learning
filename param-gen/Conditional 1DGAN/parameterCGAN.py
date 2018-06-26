@@ -47,7 +47,7 @@ batch_size = 2048				# Number of points to compute with
 nh         = 512				# Nmber of hidden nodes per layer
 lr         = .03				# Lerning rate
 lr_decay   = .9999				# Learning rate decay
-epochs     = 10000				# Number of training iterations
+epochs     = 4000				# Number of training iterations
 use_gpu    = True				# Options (True: Single GPU, False: CPU)
 ## Choose CPU or GPU ##
 use_cuda = torch.cuda.is_available() and use_gpu
@@ -70,9 +70,12 @@ dd = {'u': uniform, 'n': normal, 'e': exponential} 	# Dictionary of different di
 # latent   = [dd['e'](.8), dd['n'](0, 1), dd['n'](1, 2), dd['u'](0, 10)]
 # latent   = [dd['n'](0, 1)] * 10 + [dd['n'](0, 1)] * 6 + [dd['e'](1)] * 4
 latent = [dd['n'](0, 1)] * z_dim			# Creates a latent space entirely sampled from N(0, 1)
-labels = {0: "rec.logNPE", 1: "log rec.nHit", 2: "rec.nTankHit", 3: "rec.zenith", 
-          4: "red.azimuth", 5: "rec.coreX", 6: "rec.coreY", 7: "log rec.CxPE40",
-          8: "log SimEvent.energyTrue", 9: "SimEvent.thetaTrue", 10:"SimEvent.phiTrue"}
+labels = {0: "rec.logNPE", 1: "rec.nHit", 2: "rec.nTankHit", 3: "rec.zenith", 
+          4: "rec.azimuth", 5: "rec.coreX", 6: "rec.coreY", 7: "rec.CxPE40",
+          8: "SimEvent.energyTrue", 9: "SimEvent.thetaTrue", 10:"SimEvent.phiTrue"}
+means   = [2.6447110e+00, 4.6803799e+00, 7.8092407e+01, 4.1693807e-01, -8.8998480e-03, 6.5917976e+01, 2.5366927e+02,  2.3263862e+00, 7.7275338e+00, 2.3912493e+01, 1.7977229e+02]  # List of means for the loaded data
+stddevs = [0.5619153, 0.801478, 61.452538, 0.20918544, 1.8056167, 94.12724, 94.01841, 0.99879366, 1.7095443, 11.550515, 103.78041]			   									  # List of standard deviations for the loaded data
+logs    = [0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]													 																				  # Keep track of variables where we applied log	
 ## Sanity Checks ##
 assert z_dim >= data_dim
 assert z_dim == len(latent)
@@ -157,18 +160,21 @@ for epoch in range(epochs):
 			print('Fake Means = ', [np.mean(samples[:,i]) for i in range(data_dim)])
 
 
-			path = "pytorchhists/hist"
 			x = find_plot_dim(data_dim)
 			y = find_plot_dim(data_dim)
 			# y = max(data_dim - x, 1)
 			fig = plt.figure(figsize=(16, 16))
-			binwidth = [.5, 1, 15, 50, .25, 25]
 			for i in range(data_dim):
 				plt.subplot(x, y, i+1)
-				# bins = np.arange(0, max(real[:,i]), binwidth[i])
 				plt.title(labels[i])
-				plt.hist(real[:,i]   , bins=30, alpha=1, range=(-6, 6), label='real')
-				plt.hist(samples[:,i], bins=30, alpha=.5, range=(-6, 6), label='fake')
+				realhist = (real[:,i]*stddevs[i])+means[i]
+				fakehist = (samples[:,i]*stddevs[i])+means[i]
+				if (logs[i] == 1):
+					realhist = np.exp(realhist)
+					fakehist = np.exp(fakehist)
+				bins = np.histogram(np.hstack((realhist, fakehist)), bins=30)[1]
+				plt.hist(realhist, bins, alpha=1, label='real')
+				plt.hist(fakehist, bins, alpha=.5, label='fake')
 			plt.legend(loc='upper right')
 			plt.savefig('paramGANplots/hist'+str(epoch)+".png")
 			plt.close(fig)
@@ -199,18 +205,21 @@ for epoch in range(epochs):
 			print('Real Means = ', [np.mean(real[:,i]) for i in range(data_dim)])
 			print('Fake Means = ', [np.mean(samples[:,i]) for i in range(data_dim)])
 
-			path = "pytorchhists/hist"
 			x = find_plot_dim(data_dim)
 			y = find_plot_dim(data_dim)
 			# y = max(data_dim - x, 1)
 			fig = plt.figure(figsize=(16, 16))
-			binwidth = [.5, 1, 15, 50, .25, 12]
 			for i in range(data_dim):
 				plt.subplot(x, y, i+1)
-				# bins = np.arange(0, max(real[:,i]), binwidth[i])
 				plt.title(labels[i])
-				plt.hist(real[:,i]   , alpha=1, label='real')
-				plt.hist(samples[:,i], alpha=.5, label='fake')
+				realhist = (real[:,i]*stddevs[i])+means[i]
+				fakehist = (samples[:,i]*stddevs[i])+means[i]
+				if (logs[i] == 1):
+					realhist = np.exp(realhist)
+					fakehist = np.exp(fakehist)
+				bins = np.histogram(np.hstack((realhist, fakehist)), bins=30)[1]
+				plt.hist(realhist, bins, alpha=1, label='real')
+				plt.hist(fakehist, bins, alpha=.5, label='fake')
 			plt.legend(loc='upper right')
 			plt.savefig('paramGANplots/hist'+str(epoch)+".png")
 			plt.close(fig)
@@ -218,11 +227,3 @@ for epoch in range(epochs):
 		torch.save(G, "./saved/Gepoch"+str(epoch))
 		torch.save(D, "./saved/Depoch"+str(epoch))
 exit()
-# Ideas
-"""
--- Load all of the data for visualization at the end of 100 epochs
--- Multiple different types of ditributions as inputs for the z_ vector
--- Wider model
--- Deeper model
-
-"""

@@ -2,21 +2,38 @@
 
 Deep learning models on HAWC simulation dataset
 
+## Install conda if necessary
+```shell
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+sh ./Miniconda3-latest-Linux-x86_64.sh -b -p
+export PATH="$HOME/miniconda/bin:$PATH"
+
+conda create --name hawc python=2.7
+source activate hawc
+conda install cython matplotlib numpy scipy imageio pytorch torchvision cuda90 -c pytorch
+pip install tensorflow-gpu==1.8.0
+```
+
 ## Prerequisites
-- A HAWC simulation dataset should be downloaded and placed in main directory, `$HAWC`
-- XCDF from https://github.com/jimbraun/XCDF should be complied
-    - contents of the compiled `lib/` folder, `libxcdf.so` and `xcdf/`, should be placed in the main directory
-    - If getting errors with `libxcdf.so`, add it's location to `$LD_LIBRARY_PATH`
+- A HAWC simulation dataset should be downloaded and placed in `$HAWC`
+- XCDF from https://github.com/jimbraun/XCDF should be complied to `$XCDF`
+    - contents of the compiled `$XCDF/lib/` folder should be placed in the root directory, or link in `$LD_LIBRARY_PATH`
     - Make sure you're using python 2 and cython 2 with XCDF
-- Install python packages with `pip install -r requirements.txt` (preferably in a Conda or virtualenv environment)
+
+To download this repository, run 
+```shell
+git clone --recurse-submodules https://github.com/arcelien/hawc-deep-learning.git
+cd hawc-deep-learning
+```
 
 ## Overview
 ### Data Processing
 `parse_hawc.py` reads in data from the `$HAWC` folder and generates the training and testing datasets for our experiments.
 
 To generate the dataset, run 
-``` bash
-python parse_hawc.py $HAWC
+```shell
+python parse_hawc.py --hawc-dir $HAWC --gen layout
+python parse_hawc.py --hawc-dir $HAWC --gen [one-channel-map or two-channel-map or one-dim]
 ``` 
 The dataset will be stored in `$HAWC/data`
 
@@ -85,22 +102,30 @@ Differences here, especially in the distributions with hard cutoffs, comes from 
 This model was trained to near completion in less than an hour on a GTX 1080 Ti
 
 ### 2D Distribution Generation with WGANs
-
+WIP
 
 ### Generative Model with Pixel-cnn
-We can use a pixel-cnn model to generate very realistic PMT grid hit data.
+We can use a pixel-cnn (https://arxiv.org/abs/1601.06759) model to generate very realistic PMT grid hit data.
 
 To run pixelcnn on the 40x40 images generated from above, run
-```bash
+```shell
 cd pixel-cnn
-sh scripts/train.sh
+python train.py --save_dir $HAWC/saves --data_dir $HAWC/data --save_interval 3 --dataset [hawc1 or hawc2] (--nosample if no matplotlib)
 ```
 Checkpoints and output from pixelcnn will be located in `$HAWC/saves`, which can then be visualized with
 
-```bash
-python plot.py [epoch number of checkpoint]
+```shell
+python plot.py --num [epoch number of checkpoint] --chs [1 or 2]
 ```
 Here is an example of generated samples from pixel-cnn. From inspection, it seems as if the pixel-cnn model learns to generate a distribution of samples that is representative of the varying sparsity between hits, and the smooth falloff of charge from a specific point indicative of gamma data.
 
-<img src="./plots/pixelcnn/pixelcnn_pmt_hit_logcharge_40x40.png" width="600px"/>
-<img src="./plots/pixelcnn/pixelcnn_pmt_hits_logcharge_pmts.png" width="600px"/>
+<img src="./plots/pixelcnn/pixelcnn_pmt_hit_logcharge_40x40.png" width="800px"/>
+<img src="./plots/pixelcnn/pixelcnn_pmt_hits_logcharge_pmts.png" width="800px"/>
+
+### Two channel generation
+We then extend our pixel-cnn model to generate a simulation event including both the charge and hit time recorded at each PMT.
+
+We ran the model on a NVIDIA Tesla V100 16GB GPU; training takes 2170 seconds per epoch (entire set of gamma images), and generation takes 272 seconds to generate a batch of 16. 
+
+Here is a visualization where the first channel is log charge, and the second is hit time (normalized).
+<img src="./plots/pixelcnn/pixelcnn_pmt_hit_two_dim.png" width="1000px"/>

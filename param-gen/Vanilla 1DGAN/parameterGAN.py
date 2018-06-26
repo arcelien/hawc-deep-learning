@@ -67,8 +67,11 @@ dd = {'u': uniform, 'n': normal, 'e': exponential} 	# Dictionary of different di
 # latent   = [dd['e'](.8), dd['n'](0, 1), dd['n'](1, 2), dd['u'](0, 10)]
 # latent   = [dd['n'](0, 1)] * 10 + [dd['n'](0, 1)] * 6 + [dd['e'](1)] * 4
 latent = [dd['n'](0, 1)] * z_dim			# Creates a latent space entirely sampled from N(0, 1)
-labels = {0: "rec.logNPE", 1: "log rec.nHit", 2: "rec.nTankHit", 3: "rec.zenith", 
-          4: "red.azimuth", 5: "rec.coreX", 6: "rec.coreY", 7: "log rec.CxPE40"}
+labels = {0: "rec.logNPE", 1: "rec.nHit", 2: "rec.nTankHit", 3: "rec.zenith", 
+          4: "rec.azimuth", 5: "rec.coreX", 6: "rec.coreY", 7: "rec.CxPE40"}
+means   = [2.6437070e+00, 4.6785073e+00, 7.7988869e+01, 4.1661051e-01, -1.4959634e-02, 6.5947525e+01, 2.5352551e+02, 2.3246317e+00]  # List of means for the loaded data
+stddevs = [0.5642389, 0.80296326, 61.57711, 0.2091742, 1.8062998, 94.742744, 94.72378, 0.9968804]									 # List of standard deviations for the loaded data
+logs    = [0, 1, 0, 0, 0, 0, 0, 1]																									 # Keep track of variables where we applied log	
 ## Sanity Checks ##
 assert z_dim >= Dimension
 assert z_dim == len(latent)
@@ -133,8 +136,8 @@ for epoch in range(epochs):
 		  (epoch, Gloss, total_loss, time.time() - train_t, lr))
 	# Just in case overfitting causes mode collapse
 	lr *= lr_decay
-	# Visualize the output every 10 epochs
-	if epoch % 10 == 0:
+	# Visualize the train output every 10 epochs
+	if epoch % 10 == 0 and epoch % 100 != 0:
 		with torch.no_grad():
 			D.eval()
 			G.eval()
@@ -157,13 +160,20 @@ for epoch in range(epochs):
 			for i in range(Dimension):
 				plt.subplot(x, y, i+1)
 				plt.title(labels[i])
-				plt.hist(real[:,i]   , alpha=1, bins=30, range=(-6,6), label='real')
-				plt.hist(samples[:,i], alpha=.5, bins=30, range=(-6,6), label='fake')
+				realhist = (real[:,i]*stddevs[i])+means[i]
+				fakehist = (samples[:,i]*stddevs[i])+means[i]
+				if (logs[i] == 1):
+					realhist = np.exp(realhist)
+					fakehist = np.exp(fakehist)
+				bins = np.histogram(np.hstack((realhist, fakehist)), bins=30)[1]
+				plt.hist(realhist, bins, alpha=1, label='real')
+				plt.hist(fakehist, bins, alpha=.5, label='fake')
+
 			plt.legend(loc='upper right')
 			plt.savefig('paramGANplots/hist'+str(epoch)+".png")
 			plt.close(fig)
 	test_inp = None
-	# Visualize the output every 100 epochs
+	# Visualize the test output every 100 epochs
 	if epoch % 100 == 0:
 		with torch.no_grad():
 			D.eval()
@@ -191,8 +201,14 @@ for epoch in range(epochs):
 			for i in range(Dimension):
 				plt.subplot(x, y, i+1)
 				plt.title(labels[i])
-				plt.hist(real[:,i]   , alpha=1, bins=30, range=(-6,6), label='real')
-				plt.hist(samples[:,i], alpha=.5, bins=30, range=(-6,6), label='fake')
+				realhist = (real[:,i]*stddevs[i])+means[i]
+				fakehist = (samples[:,i]*stddevs[i])+means[i]
+				if (logs[i] == 1):
+					realhist = np.exp(realhist)
+					fakehist = np.exp(fakehist)
+				bins = np.histogram(np.hstack((realhist, fakehist)), bins=30)[1]
+				plt.hist(realhist, bins, alpha=1, label='real')
+				plt.hist(fakehist, bins, alpha=.5, label='fake')
 			plt.legend(loc='upper right')
 			plt.savefig('paramGANplots/hist'+str(epoch)+".png")
 			plt.close(fig)
