@@ -64,24 +64,12 @@ print z_label.shape
 with torch.no_grad():	
 	generated = model(z_noise, z_label)
 
-# fig = plt.figure(figsize=(16, 16))
-# 			for i in range(data_dim):
-# 				plt.subplot(x, y, i+1)
-# 				plt.title(labels[i])
-# 				realhist = (real[:,i]*stddevs[i])+means[i]
-# 				fakehist = (samples[:,i]*stddevs[i])+means[i]
-# 				if (logs[i] == 1):
-# 					realhist = np.exp(realhist)
-# 					fakehist = np.exp(fakehist)
-# 				bins = np.histogram(np.hstack((realhist, fakehist)), bins=30)[1]
-# 				plt.hist(realhist, bins, alpha=1, label='real')
-# 				plt.hist(fakehist, bins, alpha=.5, label='fake')
-
-
 plt.figure(figsize=(15,15))
 for i in range(num_dists):
 	plt.subplot(3, 3, i+1)
 	plt.title(labels[i])
+	# realhist = valid_data[:,i]
+	# fakehist = generated[:,i]
 	realhist = (valid_data[:,i]*stddevs[i])+means[i]
 	fakehist = (generated[:,i]*stddevs[i])+means[i]
 	if (logs[i] == 1):

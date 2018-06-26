@@ -47,7 +47,7 @@ batch_size = 2048				# Number of points to compute with
 nh         = 512				# Nmber of hidden nodes per layer
 lr         = .03				# Lerning rate
 lr_decay   = .9999				# Learning rate decay
-epochs     = 10000				# Number of training iterations
+epochs     = 4000				# Number of training iterations
 use_gpu    = True				# Options (True: Single GPU, False: CPU)
 ## Choose CPU or GPU ##
 use_cuda = torch.cuda.is_available() and use_gpu
