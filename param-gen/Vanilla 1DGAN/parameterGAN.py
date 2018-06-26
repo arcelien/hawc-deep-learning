@@ -67,11 +67,11 @@ dd = {'u': uniform, 'n': normal, 'e': exponential} 	# Dictionary of different di
 # latent   = [dd['e'](.8), dd['n'](0, 1), dd['n'](1, 2), dd['u'](0, 10)]
 # latent   = [dd['n'](0, 1)] * 10 + [dd['n'](0, 1)] * 6 + [dd['e'](1)] * 4
 latent = [dd['n'](0, 1)] * z_dim			# Creates a latent space entirely sampled from N(0, 1)
-labels = {0: "rec.logNPE", 1: "log rec.nHit", 2: "rec.nTankHit", 3: "rec.zenith", 
-          4: "rec.azimuth", 5: "rec.coreX", 6: "rec.coreY", 7: "log rec.CxPE40"}
+labels = {0: "rec.logNPE", 1: "rec.nHit", 2: "rec.nTankHit", 3: "rec.zenith", 
+          4: "rec.azimuth", 5: "rec.coreX", 6: "rec.coreY", 7: "rec.CxPE40"}
 means   = [2.6437070e+00, 4.6785073e+00, 7.7988869e+01, 4.1661051e-01, -1.4959634e-02, 6.5947525e+01, 2.5352551e+02, 2.3246317e+00]  # List of means for the loaded data
 stddevs = [0.5642389, 0.80296326, 61.57711, 0.2091742, 1.8062998, 94.742744, 94.72378, 0.9968804]									 # List of standard deviations for the loaded data
-logs    = [0, 1, 0, 0, 0, 0, 0, 0]																									 # Keep track of variables where we applied log	
+logs    = [0, 1, 0, 0, 0, 0, 0, 1]																									 # Keep track of variables where we applied log	
 ## Sanity Checks ##
 assert z_dim >= Dimension
 assert z_dim == len(latent)
