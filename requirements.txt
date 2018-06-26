@@ -1,6 +1,0 @@
-Cython
-matplotlib
-numpy
-scipy
-tensorflow-gpu
-imageio
