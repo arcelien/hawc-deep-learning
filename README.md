@@ -32,7 +32,9 @@ cd hawc-deep-learning
 
 To generate the dataset, run 
 ```shell
+# generate the coordinates of the PMT by reading a XCDF file (for visualization later)
 python parse_hawc.py --hawc-dir $HAWC --gen layout
+# generate the specified data files
 python parse_hawc.py --hawc-dir $HAWC --gen [one-channel-map or two-channel-map or one-dim]
 ``` 
 The dataset will be stored in `$HAWC/data`
