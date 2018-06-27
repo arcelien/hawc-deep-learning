@@ -56,7 +56,7 @@ def gen_images_mapping(path="./HAWC/", sub="gamma/", display=False, log=True, tr
     :param normalize: normalize data between (-1, 1)
     :param pixel_range: normalize data between (0, 256), the valid range of pixel values
     """
-    from squaremapping import sqmap # sqmap is a mapping of {PMT Grid ID: index into 40x40 image}
+    from squaremapping import sqmap  # sqmap is a mapping of {PMT Grid ID: index into 40x40 image}
     files = glob(os.path.join(path, sub, '*.xcd'))
     total_data = []
     labels = []
@@ -108,11 +108,11 @@ def gen_images_mapping(path="./HAWC/", sub="gamma/", display=False, log=True, tr
         if pixel_range:
             dims.append(255. * (total_data[:, :, :, 0] - min_vals[0]) / (max_vals[0] - min_vals[0]))
             if two_dims:
-                dims.append(255. * (total_data[:,:,:,1] - min_vals[1]) / (max_vals[1] - min_vals[1]))
+                dims.append(255. * (total_data[:, :, :, 1] - min_vals[1]) / (max_vals[1] - min_vals[1]))
         else:
-            dims.append(-1. + 2. * (total_data[:,:,:,0] - min_vals[0]) / (max_vals[0] - min_vals[0]))
+            dims.append(-1. + 2. * (total_data[:, :, :, 0] - min_vals[0]) / (max_vals[0] - min_vals[0]))
             if two_dims:
-                dims.append(-1. + 2. * (total_data[:,:,:,1] - min_vals[1]) / (max_vals[1] - min_vals[1]))
+                dims.append(-1. + 2. * (total_data[:, :, :, 1] - min_vals[1]) / (max_vals[1] - min_vals[1]))
 
         # sanity check for normalization
         for d in dims:
@@ -129,7 +129,8 @@ def gen_images_mapping(path="./HAWC/", sub="gamma/", display=False, log=True, tr
         plot.plot_40x40(total_data[:16], 'ground truth - gamma - log - 40x40 grid')
         plot.plot_pmts(total_data[:16], 'ground truth - gamma - log - pmts', sparse=True, layout_path=save_path)
         for i in range(5, 8):
-            plot.plot_pmts(total_data[:16], 'ground truth - gamma - log - pmts - single', sparse=True, single=i, layout_path=save_path)
+            plot.plot_pmts(total_data[:16], 'ground truth - gamma - log - pmts - single', sparse=True, single=i,
+                           layout_path=save_path)
 
     # make the train / test split
     split = int(train_split * len(total_data))
@@ -161,7 +162,7 @@ def get_layout(path, save_path='data/', sub='gamma/'):
         print(xcdf_file)
         for xs, ys, zs, ids in list(xf.fields(params)):
             for x, y, z, id in zip(xs, ys, zs, ids):
-                id -= 1 # change id to be 0 indexed
+                id -= 1  # change id to be 0 indexed
                 # make sure all pmts with the same ID have the same coords
                 if not np.isclose(pmt_locs[id][0], 0):
                     assert pmt_locs[id][0] == x
@@ -185,6 +186,7 @@ def get_layout(path, save_path='data/', sub='gamma/'):
 
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--hawc-dir', help='location of HAWC dataset', default='./HAWC/')
     parser.add_argument('--save-dir', help='where to save processed data', default='./HAWC/data/')
