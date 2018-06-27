@@ -22,10 +22,10 @@ def gen_gamma_params(path="./HAWC/"):
         xf = XCDFFile(xcdf_file)
         data = []
         # Normal 1D (no conditional)
-        params = "rec.logNPE, rec.nHit, rec.nTankHit, rec.zenithAngle, rec.azimuthAngle, rec.coreX, rec.coreY, rec.CxPE40"
+        # params = "rec.logNPE, rec.nHit, rec.nTankHit, rec.zenithAngle, rec.azimuthAngle, rec.coreX, rec.coreY, rec.CxPE40"
         # For conditional
-        # params = "rec.logNPE, rec.nHit, rec.nTankHit, rec.zenithAngle, rec.azimuthAngle, rec.coreX, rec.coreY, rec.CxPE40, \
-        # SimEvent.energyTrue, SimEvent.thetaTrue, SimEvent.phiTrue"
+        params = "rec.logNPE, rec.nHit, rec.nTankHit, rec.zenithAngle, rec.azimuthAngle, rec.coreX, rec.coreY, rec.CxPE40, \
+        SimEvent.energyTrue, SimEvent.thetaTrue, SimEvent.phiTrue"
         for param in xf.fields(params):
             if abs(param[3] - np.pi) > .01:
                 data.append(param)
@@ -34,8 +34,8 @@ def gen_gamma_params(path="./HAWC/"):
     # Simple data augmentation
     total_data[:, 1] = np.log(total_data[:, 1]) # Take the log of rec.nHit
     total_data[:, 7] = np.log(total_data[:, 7]+.01) # Take the log of rec.CxPE40
-    # total_data[:, 8] = np.log(total_data[:, 8]) # For conditional only (Very important to have)
-    assert total_data.shape == (total_data.shape[0], 8)  # 8 expected for no condition, 11 expected for conditional
+    total_data[:, 8] = np.log(total_data[:, 8]) # For conditional only (Very important to have)
+    assert total_data.shape == (total_data.shape[0], 11)  # 8 expected for no condition, 11 expected for conditional
     print("shuffling")
     np.random.shuffle(total_data)
     print(total_data[:15, :])
@@ -103,7 +103,7 @@ def gen_images_mapping(path="./HAWC/", sub='gamma/', display=False, log=True, tr
             # assert False, "not computed yet for [0, 255]"
             # dims.append(-1. + 2. * (total_data[:,:,:,1] - min_vals[1]) / (max_vals[1] - min_vals[1]))
             dims.append(255. * (total_data[:,:,:,1] - min_vals[1]) / (max_vals[1] - min_vals[1]))
-        print(dims[0].shape)
+        # print(dims[0].shape)
         # sanity check for normalization
         for d in dims:
             assert np.amax(d) <= 255.01, np.amax(d)
@@ -127,6 +127,7 @@ def gen_images_mapping(path="./HAWC/", sub='gamma/', display=False, log=True, tr
     if not os.path.exists(path):
         os.makedirs(path)
     # create both training and testing data
+    print
     suffix = "_2" if two_dims else ""
     np.save(path+"gamma_image_mapping_data" + suffix, train_data)
     np.save(path+"gamma_labels" + suffix, train_labels)
@@ -249,13 +250,13 @@ def get_layout(path="./HAWC/", sub='gamma/'):
 
 if __name__ == "__main__":
     # Generate data for images
-    if len(sys.argv) > 1:
+    if False and len(sys.argv) > 1:
         path = sys.argv[1]
         gen_images_mapping(path)
     else:
         if not os.path.exists("./data/layout.npy"):
             print("generating mapping of grid IDs to x/y/z coordinates")
             get_layout()
-        gen_images_mapping("../daqsim-nvidia/", display=False, two_dims=False, small=False, normalize=True, pixel_range=False) #path="/home/danny/HAWC/", display=False)
+        gen_images_mapping("../daqsim-nvidia/", display=False, two_dims=True, small=False, normalize=True, pixel_range=True) #path="/home/danny/HAWC/", display=False)
     # Generate data for 1D distributions
-    gen_gamma_params("../daqsim-nvidia/")
+    # gen_gamma_params("../daqsim-nvidia/")
