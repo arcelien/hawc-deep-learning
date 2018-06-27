@@ -41,7 +41,7 @@ def plot_hists(grid):
     plt.show()
 
 
-def plot_tanks_from_grid(save_path="HAWC/saves", num=2, dim=1, layout_path="HAWC/data"):
+def plot_tanks_from_grid(save_path="HAWC/saves", num=2, dim=1, layout_path="HAWC/data", file_name=""):
     """
     plot a variety of visualizations from pixelcnn 40x40 image output
     if 1 dim: raw 40x40 grid, grid of pmts, single pmts
@@ -49,7 +49,8 @@ def plot_tanks_from_grid(save_path="HAWC/saves", num=2, dim=1, layout_path="HAWC
     """
 
     prefix = "2" if dim == 2 else ""
-    grid = osp.join(save_path, "hawc" + prefix + "_sample" + str(num) + ".npz")
+    old_name = "hawc" + prefix + "_sample"
+    grid = osp.join(save_path, file_name + str(num) + ".npz")
     grid = np.load(grid)['arr_0']
     plot_40x40((grid + 1) * 127.5, 'pixelcnn pmt hits - 40x40 grid, log(charge)')
     plot_pmts(grid, 'pixelcnn pmt hits - log(charge)', layout_path=layout_path)
@@ -132,6 +133,8 @@ if __name__ == "__main__":
     parser.add_argument('--chs', help='number of channels of data', type=int, default=2, choices=[1, 2])
     parser.add_argument('--data-path', help='path to data (layout)', default='data/')
     parser.add_argument('--save-path', help='path to saves', default='HAWC/saves/')
+    parser.add_argument('--file-name', help='name of numpy save to load from', default='')
     args = parser.parse_args()
 
-    plot_tanks_from_grid(num=args.num, dim=args.chs, save_path=args.save_path, layout_path=args.data_path)
+    plot_tanks_from_grid(num=args.num, dim=args.chs, save_path=args.save_path, layout_path=args.data_path,
+                         file_name=args.file_name)

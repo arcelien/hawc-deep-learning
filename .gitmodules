@@ -1,4 +1,6 @@
 [submodule "pixel-cnn"]
 	path = pixel-cnn
 	url = https://github.com/arcelien/pixel-cnn.git
-	branch = single-channel
+[submodule "fast-pixel-cnn"]
+	path = fast-pixel-cnn
+	url = https://github.com/arcelien/fast-pixel-cnn.git
