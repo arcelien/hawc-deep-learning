@@ -58,9 +58,12 @@ def plot_tanks_from_grid(save_path="HAWC/saves", num=2, dim=1, layout_path="HAWC
 
 
 def plot_40x40(grid, title):
-    """ plot a simple grid of 40x40 images """
+    """ plot a simple grid of 40x40 images
+
+    grid: (N, H, W, C), channel must be in {1, 2}, will only plot 16 at most to avoid spam """
     fig = plt.figure(figsize=(20, 20))
-    for i in range(16):
+    num_to_plot = min(grid.shape[0], 16)
+    for i in range(num_to_plot):
         plt.subplot(4, 4, i + 1)
         if grid.shape[3] == 1:
             plt.imshow(grid[i][:, :, 0])
