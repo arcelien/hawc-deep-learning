@@ -33,11 +33,10 @@ cd hawc-deep-learning
 To generate the dataset, run 
 ```shell
 # generate the coordinates of the PMT by reading a XCDF file (for visualization later)
-python parse_hawc.py --hawc-dir $HAWC --gen layout
+python parse_hawc.py --hawc-dir $HAWC --save-dir [dir to save data in] --gen layout
 # generate the specified data files
-python parse_hawc.py --hawc-dir $HAWC --gen [one-channel-map or two-channel-map or one-dim]
+python parse_hawc.py --hawc-dir $HAWC --save-dir [dir to save data in] --gen [one-channel-map or two-channel-map or one-dim]
 ``` 
-The dataset will be stored in `$HAWC/data`
 
 For PMT data from grid hit events, we use a mapping of PMTs to specific coordinates of a 40x40 grid, defined in `squaremapping.py`
 
@@ -98,12 +97,12 @@ We can use a pixel-cnn (https://arxiv.org/abs/1601.06759) model to generate very
 To run pixelcnn on the 40x40 images generated from above, run
 ```shell
 cd pixel-cnn
-python train.py --save_dir $HAWC/saves --data_dir $HAWC/data --save_interval 3 --dataset [hawc1 or hawc2] (--nosample if no matplotlib)
+python train.py --save_dir [dir to save pixel-cnn output] --data_dir [where processed data was saved to] --save_interval 3 --dataset [hawc1 or hawc2] (--nosample if no matplotlib)
 ```
 Checkpoints and output from pixelcnn will be located in `$HAWC/saves`, which can then be visualized with
 
 ```shell
-python plot.py --num [epoch number of checkpoint] --chs [1 or 2]
+python plot.py --num [epoch number of checkpoint] --chs [1 or 2] --data-path [dir of processed HAWC data] --save-path [dir of pixel-cnn output]
 ```
 Here is an example of generated samples from pixel-cnn. From inspection, it seems as if the pixel-cnn model learns to generate a distribution of samples that is representative of the varying sparsity between hits, and the smooth falloff of charge from a specific point indicative of gamma data.
 
