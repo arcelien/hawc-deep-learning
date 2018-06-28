@@ -92,17 +92,17 @@ This model was trained to near completion in less than an hour on a GTX 1080 Ti
 WIP
 
 ### Generative Model with Pixel-cnn
-We can use a pixel-cnn (https://arxiv.org/abs/1601.06759) model to generate very realistic PMT grid hit data.
+We can use a pixel-cnn (https://arxiv.org/abs/1601.06759) model to generate very realistic PMT grid hit data. Because we can map each simulation event to a 40x40 array, we can use a generative model like PixelCNN to sample images corresponding to events.
 
-To run pixelcnn on the 40x40 images generated from above, run
+To run PixelCNN on the 40x40 images generated from above, run
 ```shell
 cd pixel-cnn
 python train.py --save_dir [dir to save pixel-cnn output] --data_dir [where processed data was saved to] --save_interval 3 --dataset [hawc1 or hawc2] (--nosample if no matplotlib)
 ```
-Checkpoints and output from pixelcnn will be located in `$HAWC/saves`, which can then be visualized with
+Checkpoints and output from PixelCNN will be located in `$HAWC/saves`, which can then be visualized with
 
 ```shell
-python plot.py --num [epoch number of checkpoint] --chs [1 or 2] --data-path [dir of processed HAWC data] --save-path [dir of pixel-cnn output]
+python plot.py --num [epoch number of checkpoint] --chs [1 or 2] --data-path [dir of processed HAWC data (layout.npy)] --save-path [dir of pixel-cnn output]
 ```
 Here is an example of generated samples from pixel-cnn. From inspection, it seems as if the pixel-cnn model learns to generate a distribution of samples that is representative of the varying sparsity between hits, and the smooth falloff of charge from a specific point indicative of gamma data.
 
@@ -112,7 +112,30 @@ Here is an example of generated samples from pixel-cnn. From inspection, it seem
 ### Two channel generation
 We then extend our pixel-cnn model to generate a simulation event including both the charge and hit time recorded at each PMT.
 
-We ran the model on a NVIDIA Tesla V100 16GB GPU; training takes 2170 seconds per epoch (entire set of gamma images), and generation takes 272 seconds to generate a batch of 16. 
+We ran the model on a NVIDIA Tesla V100 16GB GPU; training takes 2170 seconds (36 minutes) per epoch (entire set of gamma images). 
+
+Because the model converges and can generate very realistic iamges after only 3-6 epochs of training, it takes less than two hours to train this model. A small additional improvement in the metric (bits per dimension) can be realized after training for a full day, but images look equally realistic to the human eye.
+
+Unfortunately, PixelCNN is not a fast model for sampling, and it takes 272 seconds to generate a batch of 16 images (17 seconds per image)
 
 Here is a visualization where the first channel is log charge, and the second is hit time (normalized).
 <img src="./plots/pixelcnn/pixelcnn_pmt_hit_two_dim.png" width="1000px"/>
+
+### Fast PixelCNN Sampling
+We can apply a method to cache results while generating images (https://github.com/PrajitR/fast-pixel-cnn) to speed up the two channel image sampling process significantly. This new sampling technique gets an initial, signficiant speedup over the original while using the same batch size, and it scales with batch scale in near constant time - increasing the batch size does not increase sampling time.
+
+On a GTX 1080 ti, it took less than 82 seconds to generate a batch of 512 images (0.16 seconds / image). Compared to the 272 seconds to generate a batch of 16 on a Teslta V100 from before (17 seconds / image), this generation technique is over 100 times faster.
+
+The number of images per batch is limited by the ammount of GPU memory, and we ran out of memory when trying a batch of size 1024. On a GPU with 32 GBs of memory (new Telsa V100), it shoould be able to generate a batch of size `32/11*512 ~ 1500` in the same amount of time (0.05 seconds / image). 
+
+Run the fast generation with the following command:
+```shell
+# generate new images
+cd fast-pixel-cnn
+python generate.py --checkpoint [PixelCNN save directory]/params_hawc2.ckpt --save_dir [location to save images] --batch-size [max size that fits on GPU]
+
+# now visualize results
+cd ..
+python plot.py --num [iteration number to view] --chs 2 --data-path [dir of processed HAWC data] --save-path [save dir from above]
+```
+
