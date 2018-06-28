@@ -47,13 +47,11 @@ Note: because there are more coordinates (1600) than PMTs (<1200), some coordina
 
 We can visualize the actual structure of the HAWC grid of PMTs. It's clear that some data is unintialized and we clean it during processing.
 
-<img src="./plots/pmt_vis_1.png" width="400px"/>
-<img src="./plots/pmt_vis_2.png" width="400px"/>
+<img src="./plots/pmt_vis_1.png" width="400px"/> <img src="./plots/pmt_vis_2.png" width="400px"/>
 
 Here are some visualizations of data from our dataset:
 
-<img src="./plots/ground_truth/ground_truth_mapping_gamma_log.png" width="600px"/>
-<img src="./plots/ground_truth/ground_truth_mapping_gamma_pmts.png" width="600px"/>
+<img src="./plots/ground_truth/ground_truth_mapping_gamma_log.png" width="400px"/> <img src="./plots/ground_truth/ground_truth_mapping_gamma_pmts.png" width="400px"/>
 
 ## Deep learning Models and Experiments
 
