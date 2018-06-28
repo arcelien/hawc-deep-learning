@@ -89,8 +89,8 @@ This model was trained to near completion in less than an hour on a GTX 1080 Ti
 ### 2D Distribution Generation with WGANs
 WIP
 
-### Generative Model with Pixel-cnn
-We can use a pixel-cnn (https://arxiv.org/abs/1601.06759) model to generate very realistic PMT grid hit data. Because we can map each simulation event to a 40x40 array, we can use a generative model like PixelCNN to sample images corresponding to events.
+### Generative Model with PixelCNN
+We can use a PixelCNN (https://arxiv.org/abs/1601.06759) model to generate very realistic PMT grid hit data. Because we can map each simulation event to a 40x40 array, we can use a generative model like PixelCNN to sample images corresponding to events.
 
 To run PixelCNN on the 40x40 images generated from above, run
 ```shell
@@ -102,13 +102,13 @@ Checkpoints and output from PixelCNN will be located in `$HAWC/saves`, which can
 ```shell
 python plot.py --num [epoch number of checkpoint] --chs [1 or 2] --data-path [dir of processed HAWC data (layout.npy)] --save-path [dir of pixel-cnn output]
 ```
-Here is an example of generated samples from pixel-cnn. From inspection, it seems as if the pixel-cnn model learns to generate a distribution of samples that is representative of the varying sparsity between hits, and the smooth falloff of charge from a specific point indicative of gamma data.
+Here is an example of generated samples from PixelCNN. From inspection, it seems as if the PixelCNN model learns to generate a distribution of samples that is representative of the varying sparsity between hits, and the smooth falloff of charge from a specific point indicative of gamma data.
 
 <img src="./plots/pixelcnn/pixelcnn_pmt_hit_logcharge_40x40.png" width="800px"/>
 <img src="./plots/pixelcnn/pixelcnn_pmt_hits_logcharge_pmts.png" width="800px"/>
 
 ### Two channel generation
-We then extend our pixel-cnn model to generate a simulation event including both the charge and hit time recorded at each PMT.
+We then extend our PixelCNN model to generate a simulation event including both the charge and hit time recorded at each PMT.
 
 We ran the model on a NVIDIA Tesla V100 16GB GPU; training takes 2170 seconds (36 minutes) per epoch (entire set of gamma images). 
 
