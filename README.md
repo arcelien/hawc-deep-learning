@@ -51,8 +51,7 @@ We can visualize the actual structure of the HAWC grid of PMTs. It's clear that 
 
 Here are some visualizations of data from our dataset:
 
-<img src="./plots/ground_truth/ground_truth_mapping_gamma_log.png" width="600px"/>
-<img src="./plots/ground_truth/ground_truth_mapping_gamma_pmts.png" width="600px"/>
+<img src="./plots/ground_truth/ground_truth_mapping_gamma_log.png" width="400px"/> <img src="./plots/ground_truth/ground_truth_mapping_gamma_pmts.png" width="400px"/>
 
 ## Deep learning Models and Experiments
 
