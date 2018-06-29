@@ -29,14 +29,15 @@ from data import Dataset
 # from model import Discriminator, Generator
 #------------------------------------------------#
 ## Hyperparamters ##
-batch_size  = 50			# Number of images to load at a time
-iterations 	= 2000			# Number of interations through training data
-dim 		= 64			# Model Dimensions
-z_dim       = 1000			# Latent space size
-d_iter 		= 5				# Number of discriminator iterations per epoch
-LAMBDA 		= 10			# Gradient penalty hyperparamter
-output_dim  = 1600		
-train_gpu 	= True
+batch_size   = 50			# Number of images to load at a time
+iterations 	 = 2000			# Number of interations through training data
+dim 		 = 64			# Model Dimensions
+z_dim        = 1000			# Latent space size
+d_iter 		 = 5				# Number of discriminator iterations per epoch
+LAMBDA 		 = 100			# Gradient penalty hyperparamter
+output_dim   = 1600		
+train_gpu 	 = True
+num_channels = 1
 ## Helper functions ##
 normal      = lambda mu, sigma: lambda batch_size: torch.normal(mean=torch.ones(batch_size, 1)*mu, std=sigma)
 exponential = lambda rate=1: lambda batch_size: torch.from_numpy(np.random.exponential(rate, batch_size).astype(np.float32)).view(-1, 1)
@@ -72,13 +73,15 @@ class Generator(nn.Module):
 			nn.BatchNorm2d(DIM),
 			nn.LeakyReLU(True),
 		)
-		deconv_out = nn.ConvTranspose2d(DIM, 1, 7, stride=2)
+		deconv_out = nn.ConvTranspose2d(DIM, num_channels, 7, stride=2)
 		self.DIM = DIM
 		self.block1 = block1
 		self.block2 = block2
 		self.deconv_out = deconv_out
 		self.preprocess = preprocess 
 		self.sigmoid = nn.Sigmoid()
+		self.Tanh = nn.Tanh()
+		self.Softshrink = nn.Softshrink()
 
 	def forward(self, input):
 		output = self.preprocess(input)
@@ -89,13 +92,13 @@ class Generator(nn.Module):
 		output = self.deconv_out(output)
 		output = output[:, :, :40, :40]
 		output = self.sigmoid(output)
-		return output.view(-1, output_dim)
+		return output
 class Discriminator(nn.Module):
 	def __init__(self, DIM):
 		super(Discriminator, self).__init__()
 
 		main = nn.Sequential(
-			nn.Conv2d(1, DIM, 5, stride=2, padding=2),
+			nn.Conv2d(num_channels, DIM, 5, stride=2, padding=2),
 			nn.LeakyReLU(True),
 			nn.BatchNorm2d(DIM),
 			nn.Conv2d(DIM, 2*DIM, 5, stride=2, padding=2),
@@ -109,7 +112,6 @@ class Discriminator(nn.Module):
 		self.output = nn.Linear(100*DIM, 1)
 
 	def forward(self, input):
-		input = input.view(-1, 1, 40, 40)
 		out = self.main(input)
 		out = out.view(-1, 100*self.DIM)
 		out = self.output(out)
@@ -118,35 +120,44 @@ class Discriminator(nn.Module):
 def generate_image(frame, netG):
 	noise = sample_z(realdata.shape[0], z_dim).to(device)
 	samples = netG(noise)
-	samples = samples.view(batch_size, 40, 40)
+	print samples.shape
+	# samples = samples.view(batch_size, 40, 40, 2)
 
 	samples = samples.cpu().data.numpy()
+	print(np.min(samples[:,0,:,:]), np.max(samples[:,0,:,:]))
 
 	fig = plt.figure(figsize=(15, 15))
 	
 	for i in range(16):
 		plt.subplot(4, 4, i+1)
-		plt.imshow(samples[i], interpolation='nearest')
+		plt.imshow(samples[i, 0, :, :], interpolation='nearest')
 		plt.colorbar()
 	# plt.show()
 	
 	plt.savefig('plots/samples_{}.png'.format(frame))
 	plt.close()
 def calc_gradient_penalty(D, realdata, fake):
-	alpha = torch.rand(realdata.shape[0], 1).expand((-1, output_dim)).to(device)
-	realdata = realdata.view(-1, output_dim)
+	realdata = realdata.contiguous().view(realdata.shape[0], -1)
+	fake = fake.contiguous().view(fake.shape[0], -1)
+	alpha = torch.rand(realdata.shape[0], realdata.shape[1]).to(device)
 
 	combined = alpha * realdata + ((1 - alpha) * fake)
 
 	combined = combined.to(device)
 	combined = autograd.Variable(combined, requires_grad=True)
 
+	
+
+	
+	combined = combined.view(combined.shape[0], num_channels, 40, 40)
 	D_combined = D(combined)
 
 	gradients = autograd.grad(outputs=D_combined, inputs=combined,
 							  grad_outputs=torch.ones(D_combined.size()).to(device),
 							  create_graph=True, retain_graph=True, only_inputs=True)[0]
-	return ((gradients.norm(2, dim=1) - 1) ** 2).mean() * LAMBDA
+	a = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * LAMBDA
+	# print a
+	return a
 def lazy_data_loader(trainloader):
 	while True:
 		for imgs, labels in trainloader:
@@ -155,7 +166,9 @@ def lazy_data_loader(trainloader):
 ## Training Data ##
 trainset = Dataset('../../data', train=True, split_size=.8)  			# X is images, y represents [zenith, azimuth] labels
 trainloader = lazy_data_loader(DataLoader(dataset=trainset, shuffle=True, batch_size=batch_size))
-print (np.max(trainset.data))  # we want this number to be relatively small (i.e < 50)
+print (np.min(trainset.data[:,:,:,:1]), np.max(trainset.data[:,:,:,:1]))  # we want this number to be relatively small (i.e < 50)
+if num_channels == 2: print (np.min(trainset.data[:,:,:,1:]), np.max(trainset.data[:,:,:,1:]))  # we want this number to be relatively small (i.e < 50)
+
 
 netG = Generator(dim).to(device)
 netD = Discriminator(dim).to(device)
@@ -173,7 +186,10 @@ for iteration in range(iterations):
 	netG.train()
 	for _ in range(d_iter):
 		realdata, reallabel = trainloader.next()
-		realdata, reallabel = realdata.to(device), reallabel.to(device)
+		realdata, reallabel = realdata.to(device)[:,:,:,:1], reallabel.to(device)
+		# realdata /= 1000.0
+		# print realdata.shape
+		realdata = torch.transpose(realdata, 1, 3)
 		netD.zero_grad()
 		# train with real
 		D_real = netD(realdata)
@@ -212,6 +228,6 @@ for iteration in range(iterations):
 
 	print  "iteration", iteration, 'Dcost', D_cost.cpu().item(), "Gcost", G_cost.cpu().item(), "W distance", Wasserstein_D.cpu().item()
 
-	if iteration % 100 == 99:
+	if iteration % 40 == 0:
 		print 'Time', time() - train_t
 		generate_image(iteration, netG)

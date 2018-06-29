@@ -10,7 +10,7 @@ class Dataset(Dataset):
     def load_to_dict(file, labels): 
         return {'x': np.load(file), 'y': np.load(labels)}
     @staticmethod
-    def load(path, train, dims=1):
+    def load(path, train, dims=2):
         assert dims == 1 or dims == 2
         suffix = '.npy' if dims==1 else '_2.npy'
         if train:
@@ -32,9 +32,18 @@ class Dataset(Dataset):
         if train:
             self.len = int(self.len * split_size)
             self.data, self.labels = self.data[0][:self.len], self.data[1][:self.len]
+            # self.data[:,:,:,:1] -= np.mean(self.data[:,:,:,:1])
+            # self.data[:,:,:,1:] -= np.mean(self.data[:,:,:,1:])
+            self.data[:,:,:,:1] /= 23# np.max(self.data[:,:,:,:1])
+            self.data[:,:,:,1:] /= 23#np.max(self.data[:,:,:,1:])
         else:
             self.len = self.len - int(self.len * split_size)
             self.data, self.labels = self.data[0][self.len:], self.data[1][self.len:]
+            # self.data[:,:,:,:1] -= np.mean(self.data[:,:,:,:1])
+            # self.data[:,:,:,1:] -= np.mean(self.data[:,:,:,1:])
+            # self.data[:,:,:,:1] /= np.max(self.data[:,:,:,:1])
+            self.data[:,:,:,:1] /= 23# np.max(self.data[:,:,:,:1])
+            self.data[:,:,:,1:] /= 23# np.max(self.data[:,:,:,1:])
     def __getitem__(self, item):
         assert self.len > item
         return self.data[item], self.labels[item]
