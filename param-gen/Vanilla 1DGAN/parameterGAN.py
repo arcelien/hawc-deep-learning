@@ -7,6 +7,7 @@ from torch.utils.data import Dataset, DataLoader
 #------------------------------------------------#
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.stats
 import time
 import math
 import os
@@ -68,10 +69,12 @@ dd = {'u': uniform, 'n': normal, 'e': exponential} 	# Dictionary of different di
 # latent   = [dd['n'](0, 1)] * 10 + [dd['n'](0, 1)] * 6 + [dd['e'](1)] * 4
 latent = [dd['n'](0, 1)] * z_dim			# Creates a latent space entirely sampled from N(0, 1)
 labels = {0: "rec.logNPE", 1: "rec.nHit", 2: "rec.nTankHit", 3: "rec.zenith", 
-          4: "rec.azimuth", 5: "rec.coreX", 6: "rec.coreY", 7: "rec.CxPE40"}
+		  4: "rec.azimuth", 5: "rec.coreX", 6: "rec.coreY", 7: "rec.CxPE40"}
 means   = [2.6437070e+00, 4.6785073e+00, 7.7988869e+01, 4.1661051e-01, -1.4959634e-02, 6.5947525e+01, 2.5352551e+02, 2.3246317e+00]  # List of means for the loaded data
 stddevs = [0.5642389, 0.80296326, 61.57711, 0.2091742, 1.8062998, 94.742744, 94.72378, 0.9968804]									 # List of standard deviations for the loaded data
-logs    = [0, 1, 0, 0, 0, 0, 0, 1]																									 # Keep track of variables where we applied log	
+logs    = [0, 1, 0, 0, 0, 0, 0, 1]	
+KL = scipy.stats.entropy																								 # Keep track of variables where we applied log	
+kl_list = []
 ## Sanity Checks ##
 assert z_dim >= Dimension
 assert z_dim == len(latent)
@@ -150,10 +153,6 @@ for epoch in range(epochs):
 			samples = np.array(samples)
 			real = real.cpu().numpy()
 
-			print('Real Means = ', [np.mean(real[:,i]) for i in range(Dimension)])
-			print('Fake Means = ', [np.mean(samples[:,i]) for i in range(Dimension)])
-
-
 			x = find_plot_dim(Dimension)
 			y = find_plot_dim(Dimension)
 			fig = plt.figure(figsize=(16, 16))
@@ -174,7 +173,7 @@ for epoch in range(epochs):
 			plt.close(fig)
 	test_inp = None
 	# Visualize the test output every 100 epochs
-	if epoch % 100 == 0:
+	if epoch % 20 == 0:
 		with torch.no_grad():
 			D.eval()
 			G.eval()
@@ -192,12 +191,11 @@ for epoch in range(epochs):
 			samples = np.array(samples)
 			real = real.cpu().numpy()
 
-			print('Real Means = ', [np.mean(real[:,i]) for i in range(Dimension)])
-			print('Fake Means = ', [np.mean(samples[:,i]) for i in range(Dimension)])
-
 			x = find_plot_dim(Dimension)
 			y = find_plot_dim(Dimension)
 			fig = plt.figure(figsize=(16, 16))
+			reallist = []
+			fakelist = []
 			for i in range(Dimension):
 				plt.subplot(x, y, i+1)
 				plt.title(labels[i])
@@ -207,8 +205,22 @@ for epoch in range(epochs):
 					realhist = np.exp(realhist)
 					fakehist = np.exp(fakehist)
 				bins = np.histogram(np.hstack((realhist, fakehist)), bins=30)[1]
-				plt.hist(realhist, bins, alpha=1, label='real')
-				plt.hist(fakehist, bins, alpha=.5, label='fake')
+				nreal, _, _ = plt.hist(realhist, bins, alpha=1, label='real')
+				nfake, _, _ = plt.hist(fakehist, bins, alpha=.5, label='fake')
+				reallist.append(nreal)
+				fakelist.append(nfake)
+			kls = []
+			for d1, d2 in zip(reallist[:-1], fakelist[:-1]):
+				d1, d2 = d1/np.sum(d1), d2/np.sum(d2)
+				d1, d2 = d1+1e-4, d2+1e-4
+				# print d1, d2
+				kl_divergence = float(KL(d1, d2))
+				kls.append(kl_divergence)
+			kl_list.append(kls)
 			plt.legend(loc='upper right')
 			plt.savefig('paramGANplots/hist'+str(epoch)+".png")
+			plt.close(fig)
+			fig = plt.figure(figsize=(16, 16)) 
+			plt.semilogy(kl_list)
+			plt.savefig('paramGANplots/KL'+".png")
 			plt.close(fig)
