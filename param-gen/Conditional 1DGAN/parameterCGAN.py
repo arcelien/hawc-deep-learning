@@ -224,5 +224,5 @@ for epoch in range(epochs):
 			plt.close(fig)
 	if epoch % 1000 == 0:
 		torch.save(G, "./saved/Gepoch"+str(epoch))
-		torch.save(D, "./saved/Depoch"+(epoch))
+		torch.save(D, "./saved/Depoch"+str(epoch))
 exit()
