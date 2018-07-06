@@ -9,7 +9,7 @@ class Data(Dataset):
 	def __init__(self, train, split_size=0.8, normalize=False, conditional=False):
 		assert 0 < split_size < 1
 		self.dataset = np.load("../../gamma_data.npy")[:,:-3]
-		print self.dataset.shape
+		# print self.dataset.shape
 		self.len = self.dataset.shape[0]
 		if train:
 			self.len = int(self.len * split_size)

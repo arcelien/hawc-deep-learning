@@ -43,7 +43,7 @@ Dimension  = 8      			# Number of gaussians to replicate
 z_dim      = 50					# Size of latent layer
 batch_size = 2048				# Number of points to compute with
 nh         = 512				# Nmber of hidden nodes per layer
-lr         = .03				# Lerning rate
+lr         = .01				# Lerning rate
 lr_decay   = .9999				# Learning rate decay
 epochs     = 10000				# Number of training iterations (takes at least 200 epochs to start seeing progress)
 use_gpu    = True				# Options (True: Single GPU, False: CPU)
@@ -224,3 +224,6 @@ for epoch in range(epochs):
 			plt.semilogy(kl_list)
 			plt.savefig('paramGANplots/KL'+".png")
 			plt.close(fig)
+	if epoch % 1000 == 0:
+		torch.save(G, "./saved/Gepoch"+str(epoch))
+		torch.save(D, "./saved/Depoch"+str(epoch))
