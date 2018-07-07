@@ -6,13 +6,22 @@ import matplotlib.pyplot as plt
 	2. Choose image number (1, 40, 40, 2)
 	3. Create folder imgs
 	4. Run code
-	5.run 'ffmpeg -start_number 0 -i imgs/img%00d.jpg -vcodec mpeg4 test.mp4' in terminal
+	5. run 'ffmpeg -start_number 0 -i imgs/img%00d.jpg -vcodec mpeg4 test.mp4' in terminal
 """
+do_normalize = True  # if the data hasn't been normalized yet
+image_num = 25
 
-image_num = 0
-
-imgs = np.load("arr_0.npy")
+imgs = np.load("gt_hawc_2ch.npy")
 img = imgs[image_num,:,:,:]
+if do_normalize:
+	img = img / np.max(img) * 2
+	img = img - 1
+print(np.max(img), np.min(img), np.mean(img))
+
+# plt.figure()
+# plt.imshow(img[:,:,0])
+# plt.show()
+# exit()
 
 outarr = np.zeros((100, 40, 40))
 outarr[:,39,0] = .1
