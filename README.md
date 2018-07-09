@@ -53,6 +53,16 @@ Here are some visualizations of data from our dataset:
 
 <img src="./plots/ground_truth/ground_truth_mapping_gamma_log.png" width="400px"/> <img src="./plots/ground_truth/ground_truth_mapping_gamma_pmts.png" width="400px"/>
 
+To visualize a 2 channel image (must have time as the sceond channel) as a video, use `visualize.py`. First load and reference a .npy file containing the image as a numpy array. If multiple images are in the array, specify the image that is to be converted. Then create folder in same directory level called "imgs". Run `visualize.py`, which should fill "imgs" with around 100 images of the event.
+
+Finally to convert the images to video, run in terminal:
+
+```bash
+ffmpeg -start_number 0 -i imgs/img%00d.jpg -vcodec mpeg4 test.mp4
+```
+
+It is important to note that this last command will generally not work when in an anaconda enviroment so it is suggested to exit any enviroment before running the bash command.
+
 ## Deep learning Models and Experiments
 
 ### 1D Distribution Generation with Non-Conditional GANs
