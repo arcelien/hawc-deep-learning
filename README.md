@@ -167,4 +167,4 @@ Run the model by passing in an additonal command line argument of `-c` to the Pi
 Conditioning on variables allows us to generate events corresponding to an arbitrary set of variables - we can condition on any labeled variable associcated with the events in our dataset.
 
 Here is a visualization of a PixelCNN model conditioned on `rec.azimuth`:
-`to be added`
+<img src="./plots/pixelcnn/pixelcnn_two_cond.png" width="1000px"/>
