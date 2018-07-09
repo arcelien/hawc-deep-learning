@@ -93,7 +93,18 @@ Differences here, especially in the distributions with hard cutoffs, comes from 
 This model was trained to near completion in less than an hour on a GTX 1080 Ti
 
 ### 2D Distribution Generation with WGANs
-WIP
+We can extend the 1D GAN to the 2D domain via 2D GANs and WGANs. To increase stability, we use the WGAN model which entails simply changing the loss function.
+
+To run the 2D GAN, the data needs to first be processed by `parse_hawc.py`. To run either a vanilla (normal loss) GAN or WGAN, go to `image-gen/` and choose either `Vanilla DCGAN/` or `Wasserstein DCGAN/`. In the `Vanilla DCGAN/` there must be a "plots" and "saved" folder and in `Wasserstein DCGAN/` there must be a "tmp" folder. The generated images should go to plots and tmp respectively. Finally run
+
+```bash
+python train.py
+```
+to train the model.
+
+Here is an example of the current 2-channel GAN.
+
+
 
 ### Generative Model with PixelCNN
 We can use a PixelCNN (https://arxiv.org/abs/1601.06759) model to generate very realistic PMT grid hit data. Because we can map each simulation event to a 40x40 array, we can use a generative model like PixelCNN to sample images corresponding to events.
