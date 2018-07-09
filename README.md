@@ -103,6 +103,7 @@ python train.py
 to train the model.
 
 Here is an example of the current 2-channel GAN.
+<img src="./plots/2DGAN/2dgan_2channel.png">
 
 
 
