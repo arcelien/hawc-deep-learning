@@ -53,6 +53,16 @@ Here are some visualizations of data from our dataset:
 
 <img src="./plots/ground_truth/ground_truth_mapping_gamma_log.png" width="400px"/> <img src="./plots/ground_truth/ground_truth_mapping_gamma_pmts.png" width="400px"/>
 
+To visualize a 2 channel image (must have time as the sceond channel) as a video, use `visualize.py`. First load and reference a .npy file containing the image as a numpy array. If multiple images are in the array, specify the image that is to be converted. Then create folder in same directory level called "imgs". Run `visualize.py`, which should fill "imgs" with around 100 images of the event.
+
+Finally to convert the images to video, run in terminal:
+
+```bash
+ffmpeg -start_number 0 -i imgs/img%00d.jpg -vcodec mpeg4 test.mp4
+```
+
+It is important to note that this last command will generally not work when in an anaconda enviroment so it is suggested to exit any enviroment before running the bash command.
+
 ## Deep learning Models and Experiments
 
 ### 1D Distribution Generation with Non-Conditional GANs
@@ -103,6 +113,7 @@ python train.py
 to train the model.
 
 Here is an example of the current 2-channel GAN.
+<img src="./plots/2DGAN/2dgan_2channel.png">
 
 
 
@@ -167,4 +178,4 @@ Run the model by passing in an additonal command line argument of `-c` to the Pi
 Conditioning on variables allows us to generate events corresponding to an arbitrary set of variables - we can condition on any labeled variable associcated with the events in our dataset.
 
 Here is a visualization of a PixelCNN model conditioned on `rec.azimuth`:
-`to be added`
+<img src="./plots/pixelcnn/pixelcnn_two_cond.png" width="1000px"/>
