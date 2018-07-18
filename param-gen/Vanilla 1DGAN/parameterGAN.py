@@ -21,9 +21,11 @@ class Discriminator(nn.Module):
 		super(Discriminator, self).__init__()
 		self.net = nn.Sequential(nn.Linear(Dimension, nh),
 								 nn.ReLU(),
-								 nn.Linear(nh, nh),
-								 nn.Tanh(),		# Was previously Tanh
-								 nn.Linear(nh, 1),
+								 nn.Linear(nh, nh//2),
+								 nn.ReLU(),		
+								 nn.Linear(nh//2, nh//2),
+								 nn.ReLU(),
+								 nn.Linear(nh//2, 1),
 								 nn.Sigmoid())
 	def forward(self, x):
 		return self.net(x)
@@ -33,17 +35,19 @@ class Generator(nn.Module):
 		super(Generator, self).__init__()
 		self.net = nn.Sequential(nn.Linear(z_dim, nh),
 								 nn.LeakyReLU(),
-								 nn.Linear(nh, nh),
+								 nn.Linear(nh, nh//2),
 								 nn.LeakyReLU(),
-								 nn.Linear(nh, Dimension))
+								 nn.Linear(nh//2, nh//2),
+								 nn.LeakyReLU(),
+								 nn.Linear(nh//2, Dimension))
 	def forward(self, x):
 		return self.net(x)
 ## Declare Hyperparameters  ##
 Dimension  = 8      			# Number of gaussians to replicate
 z_dim      = 50					# Size of latent layer
 batch_size = 2048				# Number of points to compute with
-nh         = 512				# Nmber of hidden nodes per layer
-lr         = .01				# Lerning rate
+nh         = 512				# Number of hidden nodes per layer
+lr         = .03				# Learning rate
 lr_decay   = .9999				# Learning rate decay
 epochs     = 10000				# Number of training iterations (takes at least 200 epochs to start seeing progress)
 use_gpu    = True				# Options (True: Single GPU, False: CPU)
@@ -222,6 +226,7 @@ for epoch in range(epochs):
 			plt.close(fig)
 			fig = plt.figure(figsize=(16, 16)) 
 			plt.semilogy(kl_list)
+			plt.xlabel('Epochs x 20')
 			plt.savefig('paramGANplots/KL'+".png")
 			plt.close(fig)
 	if epoch % 1000 == 0:

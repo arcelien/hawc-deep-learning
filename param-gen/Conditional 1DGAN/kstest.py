@@ -19,9 +19,9 @@ from data import Data
 #------------------------------------------------#
 ## Models ##
 class Discriminator(nn.Module):
-	def __init__(self, Dimension, nh):
+	def __init__(self, class_dim, data_dim, nh):
 		super(Discriminator, self).__init__()
-		self.net = nn.Sequential(nn.Linear(Dimension, nh),
+		self.net = nn.Sequential(nn.Linear(class_dim+data_dim, nh),
 								 nn.ReLU(),
 								 nn.Linear(nh, nh//2),
 								 nn.ReLU(),		
@@ -29,39 +29,42 @@ class Discriminator(nn.Module):
 								 nn.ReLU(),
 								 nn.Linear(nh//2, 1),
 								 nn.Sigmoid())
-	def forward(self, x):
+	def forward(self, x, y):
+		x = torch.cat([x, y], 1)
 		return self.net(x)
 
 class Generator(nn.Module):
-	def __init__(self, z_dim, Dimension, nh):
+	def __init__(self, z_dim, class_num, data_dim, nh):
 		super(Generator, self).__init__()
-		self.net = nn.Sequential(nn.Linear(z_dim, nh),
+		self.net = nn.Sequential(nn.Linear(z_dim+class_dim, nh),
 								 nn.LeakyReLU(),
 								 nn.Linear(nh, nh//2),
 								 nn.LeakyReLU(),
 								 nn.Linear(nh//2, nh//2),
 								 nn.LeakyReLU(),
-								 nn.Linear(nh//2, Dimension))
-	def forward(self, x):
+								 nn.Linear(nh//2, data_dim))
+	def forward(self, x, y):
+		x = torch.cat([x, y], 1)
 		return self.net(x)
 ## Declare Hyperparameters  ##
 Dimension  = 8      			# Number of gaussians to replicate
 z_dim      = 50					# Size of latent layer
-batch_size = 60000				# Number of points in dataset to sample (60112+15029 max size of the current dataset)
-sample_size= batch_size * 15 	   # Number of points to sample from generator (unbounded)
+batch_size = 15000				# Number of points in dataset to sample (60112 max size of the current dataset)
+sample_size= batch_size  	    # Number of points to sample from generator (unbounded)
 alpha      = .01				# Confidence interval for the ks-test
 # Training data
 testset    = Data(train=False, normalize=True)
 testloader = torch.utils.data.DataLoader(dataset=testset, shuffle=True, batch_size=batch_size)
-print(len(testset))
 # Create Models
-G = torch.load('saved/Gepoch3000')
+G = torch.load('saved/Gepoch2000')
 
-real_samples = next(iter(testloader))[0]
+real = next(iter(testloader))
+real_samples, real_labels = real[0], real[1]
 z_ 			 = torch.randn(sample_size, z_dim).cuda()
-fake_samples = G(z_)
+fake_samples = G(z_, real_labels.cuda())
 
 real_samples, fake_samples = real_samples.numpy(), fake_samples.cpu().detach().numpy()
+
 
 # Calculations
 c_a = np.sqrt(-0.5 * np.log(alpha / 2.0))		# confidence interval c(a)

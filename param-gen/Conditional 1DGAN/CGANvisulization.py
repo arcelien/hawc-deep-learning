@@ -27,12 +27,11 @@ class Generator(nn.Module):
 		x = torch.cat([x, y], 1)
 		return self.net(x)
 ## Varibles ##
-test_size = 100
 num_dists = 8
 num_conds = 3
 uniform_labels = False
 ## Testing ##
-model = torch.load('./saved/Gepoch0')  # Path to where saved generator model is 
+model = torch.load('./saved/Gepoch1000')  # Path to where saved generator model is 
 labels = {0: "rec.logNPE", 1: "rec.nHit", 2: "rec.nTankHit", 3: "rec.zenith", 
           4: "rec.azimuth", 5: "rec.coreX", 6: "rec.coreY", 7: "rec.CxPE40",
           8: "SimEvent.energyTrue", 9: "SimEvent.thetaTrue", 10:"SimEvent.phiTrue"}

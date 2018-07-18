@@ -20,9 +20,11 @@ class Discriminator(nn.Module):
 		super(Discriminator, self).__init__()
 		self.net = nn.Sequential(nn.Linear(class_dim+data_dim, nh),
 								 nn.ReLU(),
-								 nn.Linear(nh, nh),
-								 nn.Tanh(),		# Was previously Tanh
-								 nn.Linear(nh, 1),
+								 nn.Linear(nh, nh//2),
+								 nn.ReLU(),		
+								 nn.Linear(nh//2, nh//2),
+								 nn.ReLU(),
+								 nn.Linear(nh//2, 1),
 								 nn.Sigmoid())
 	def forward(self, x, y):
 		x = torch.cat([x, y], 1)
@@ -33,9 +35,11 @@ class Generator(nn.Module):
 		super(Generator, self).__init__()
 		self.net = nn.Sequential(nn.Linear(z_dim+class_dim, nh),
 								 nn.LeakyReLU(),
-								 nn.Linear(nh, nh),
+								 nn.Linear(nh, nh//2),
 								 nn.LeakyReLU(),
-								 nn.Linear(nh, data_dim))
+								 nn.Linear(nh//2, nh//2),
+								 nn.LeakyReLU(),
+								 nn.Linear(nh//2, data_dim))
 	def forward(self, x, y):
 		x = torch.cat([x, y], 1)
 		return self.net(x)
