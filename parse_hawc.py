@@ -32,6 +32,7 @@ def gen_gamma_params(path, save_path):
     total_data[:, 7] = np.log(total_data[:, 7] + .01)  # Take the log of rec.rec.CxPE40
     total_data[:, 8] = np.log(total_data[:, 8])  # For conditional only (Very important to have)
     assert total_data.shape == (total_data.shape[0], 11)  # 8 expected for no condition, 11 expected for conditional
+    print(total_data.shape, total_data.shape[0]*0.8)
     print("shuffling")
     np.random.shuffle(total_data)
     print(total_data[:15, :])
@@ -63,6 +64,11 @@ def gen_images_mapping(path="./HAWC/", sub="gamma/", display=False, log=True, tr
     params = "event.hit.charge, event.hit.time, event.hit.gridId, " \
              "rec.zenithAngle, rec.azimuthAngle"
     if small: files = files[0:1]
+
+    to_plot = [[] for _ in range(16)]
+    latent_range = np.linspace(0.05, np.pi/4, 16)
+    i = 0
+
     for xcdf_file in files:
         print(xcdf_file)
         xf = XCDFFile(xcdf_file)
@@ -90,6 +96,11 @@ def gen_images_mapping(path="./HAWC/", sub="gamma/", display=False, log=True, tr
 
             total_data.append(grid)
             labels.append([zen, azi])
+            for indx, l_r in enumerate(latent_range):
+                if l_r - 0.02 < zen < l_r + 0.02:
+                    to_plot[indx].append(i)
+            i += 1
+
     total_data = np.array(total_data, dtype=np.float32)
     labels = np.array(labels)
     print('data shape', total_data.shape, 'labels shape', labels.shape)  # shape should be (N, 40, 40, 2)
@@ -119,6 +130,16 @@ def gen_images_mapping(path="./HAWC/", sub="gamma/", display=False, log=True, tr
             assert np.amax(d) <= 255.01 if two_dims else 1.01, np.amax(d)
             assert np.amin(d) >= 0.0 if two_dims else -1.01, np.amin(d)
         total_data = np.stack(dims, axis=3)
+
+    print("saving numpy data")
+    np.save('/tmp/gt_hawc_2ch.npy', total_data[:100])
+
+    to_plot_processed = []
+    for list_of_close in to_plot:
+        print(len(list_of_close))
+        to_plot_processed.append(total_data[list_of_close])
+
+    #    plot.plot_condition(to_plot_processed, '')
 
     # shuffle data and fix seed
     np.random.seed(0)

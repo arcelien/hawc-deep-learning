@@ -41,42 +41,150 @@ def plot_hists(grid):
     plt.show()
 
 
-def plot_tanks_from_grid(save_path="HAWC/saves", num=2, dim=1, layout_path="HAWC/data", file_name=""):
+def plot_tanks_from_grid(save_path="HAWC/saves", num=2, dim=1, layout_path="HAWC/data", file_name="", cond=None, bs=16):
     """
     plot a variety of visualizations from pixelcnn 40x40 image output
     if 1 dim: raw 40x40 grid, grid of pmts, single pmts
     if 2 dim: 40x40 grid side by side, grid of pmts side by side
     """
 
+    if False:
+        grid = []
+        for i in range(6, 33, 3):
+            grid.append((np.load(osp.join(save_path, file_name + str(i) + ".npz"))['arr_0'] + 1) * 127.5)
+        plot_condition(grid, 'conditional')
+
     prefix = "2" if dim == 2 else ""
     old_name = "hawc" + prefix + "_sample"
     grid = osp.join(save_path, file_name + str(num) + ".npz")
     grid = np.load(grid)['arr_0']
-    plot_40x40((grid + 1) * 127.5, 'pixelcnn pmt hits - 40x40 grid, log(charge)')
+
+    plot_40x40_subsubplot((grid + 1) * 127.5, 'pixelcnn pmt hits - 40x40 grid, log(charge)', cond, bs)
     plot_pmts(grid, 'pixelcnn pmt hits - log(charge)', layout_path=layout_path)
     for i in range(5, 16):
         plot_pmts(grid, 'pixelcnn pmt hits - log(charge) - single', single=i, layout_path=layout_path)
 
 
-def plot_40x40(grid, title):
+idx_to_name = {0: "charge", 1: "time"}
+def plot_40x40_subsubplot(grid, title, cond=None, bs=16, dual_ch=True):
     """ plot a simple grid of 40x40 images
 
+    dual_ch: whether to plot one channel or two
+    bs: if cond, the batch size to know what to set latent vars to
+    cond: tuple (min, max) describing value of latent variable to vary
+    grid: (N, H, W, C), channel must be in {1, 2}, will only plot 16 at most to avoid spam """
+    import matplotlib.gridspec as gridspec
+
+    big = True
+
+    fig = plt.figure(figsize=(20, 10))
+    if not big:
+        outer = gridspec.GridSpec(2, 2, wspace=0.2, hspace=0.2)
+    else:
+        outer = gridspec.GridSpec(4, 4, wspace=0.2, hspace=0.2)
+
+    num_to_plot = min(grid.shape[0], 16)
+    if cond: cond_var = np.linspace(cond[0], cond[1], bs)
+
+    for i in range(16 if big else 4):
+        inner = gridspec.GridSpecFromSubplotSpec(1, 2, subplot_spec=outer[i], wspace=0.1, hspace=0.1)
+
+        for j in range(2):
+            ax = plt.Subplot(fig, inner[j])
+
+            # subtitle = 'event %i' % i
+            # if cond:
+            #     latent = cond_var[i]
+            #     subtitle += ', azimuth: %.2f' % latent
+            # # plt.title(subtitle)
+            # first_channel = grid[i][:, :, 0].copy()
+            # mask = ~(np.ma.masked_values(grid[i][:, :, 0], 0).mask)
+            # to_show = np.concatenate((first_channel, np.clip(grid[i][:, :, 1], 50, 150) * mask), axis=1)
+            # plt.imshow(to_show)
+            # t = ax.text(0.5, 0.5, 'outer=%d, inner=%d' % (i, j))
+            # t.set_ha('center')
+
+            # else:
+            subtitle = 'event %i, %s' % (i, idx_to_name[j % 2])
+            if cond:
+                latent = cond_var[i]
+                subtitle += ', cond: %.2f' % latent
+            ax.set_title(subtitle)
+            if j % 2 == 1:
+                grid[i][:, :, j % 2] = np.clip(grid[i][:, :, j % 2], 50, 150)
+            # cmap = "Accent" if j == 0 else "Blues_r"
+            im = ax.imshow(grid[i][:, :, j % 2])
+            ax.set_xticks([])
+            ax.set_yticks([])
+            fig.add_subplot(ax)
+    # fig.subplots_adjust(right=0.8)
+    # cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+    # fig.colorbar(im, cax=cbar_ax)
+    # fig.suptitle(title)
+    plt.tight_layout()
+    # plt.show(bbox_inches="tight")
+    plt.savefig("test", bbox_inches="tight")
+
+def plot_40x40(grid, title, cond=None, bs=16, dual_ch=True):
+    """ plot a simple grid of 40x40 images
+
+    dual_ch: whether to plot one channel or two
+    bs: if cond, the batch size to know what to set latent vars to
+    cond: tuple (min, max) describing value of latent variable to vary
     grid: (N, H, W, C), channel must be in {1, 2}, will only plot 16 at most to avoid spam """
     fig = plt.figure(figsize=(20, 20))
     num_to_plot = min(grid.shape[0], 16)
+    if cond: cond_var = np.linspace(cond[0], cond[1], bs)
+
     for i in range(num_to_plot):
         plt.subplot(4, 4, i + 1)
         if grid.shape[3] == 1:
             plt.imshow(grid[i][:, :, 0])
         elif grid.shape[3] == 2:
-            plt.title('event %i, dim %i' % (i // 2, i % 2))
-            if i % 2 == 1:
-                grid[i // 2][:, :, i % 2] = np.clip(grid[i // 2][:, :, i % 2], 50, 150)
-            plt.imshow(grid[i // 2][:, :, i % 2])
-        plt.colorbar()
+            if dual_ch:
+                subtitle = 'event %i' % i
+                if cond:
+                    latent = cond_var[i]
+                    subtitle += ', azimuth: %.2f' % latent
+                plt.title(subtitle)
+                first_channel = grid[i][:, :, 0].copy()
+                mask = ~(np.ma.masked_values(grid[i][:, :, 0], 0).mask)
+                to_show = np.concatenate((first_channel, np.clip(grid[i][:, :, 1], 50, 150) * mask), axis=1)
+                plt.imshow(to_show)
+
+            else:
+                subtitle = 'event %i, dim %i' % (i // 2, i % 2)
+                if cond:
+                    latent = cond_var[i // 2]
+                    subtitle += ', cond: %.2f' % latent
+                plt.title(subtitle)
+                if i % 2 == 1:
+                    grid[i // 2][:, :, i % 2] = np.clip(grid[i // 2][:, :, i % 2], 50, 150)
+                plt.imshow(grid[i // 2][:, :, i % 2])
+
+        # plt.colorbar()
     fig.suptitle(title)
     plt.show()
 
+
+def plot_condition(grid, title):
+    """ plot a images where the condition is the same """
+
+    latent_range = np.linspace(0.05, np.pi/4, 16)
+
+    for latent in range(16):
+        fig = plt.figure(figsize=(20, 20))
+        num_to_plot = min(len(grid), 16)
+
+        for i in range(num_to_plot):
+            plt.subplot(4, 4, i + 1)
+            first_channel = grid[i][latent, :, :, 0].copy()
+            mask = ~(np.ma.masked_values(grid[i][latent, :, :, 0], 0).mask)
+            to_show = np.concatenate((first_channel, np.clip(grid[i][latent, :, :, 1], 50, 150) * mask), axis=1)
+            plt.imshow(to_show)
+
+        fig.suptitle('latent: %f' % latent_range[latent])
+        plt.show()
 
 def plot_pmts(grid, title, single=None, sparse=False, layout_path="data/"):
     """
@@ -134,7 +242,9 @@ if __name__ == "__main__":
     parser.add_argument('--data-path', help='path to data (layout)', default='data/')
     parser.add_argument('--save-path', help='path to saves', default='HAWC/saves/')
     parser.add_argument('--file-name', help='name of numpy save to load from', default='')
+    parser.add_argument('--cond', help='None or list [min, max] of latent variable', default=None, type=float, nargs="+")
+    parser.add_argument('--bs', help='batch size, used if conditional', default=16, type=int)
     args = parser.parse_args()
 
     plot_tanks_from_grid(num=args.num, dim=args.chs, save_path=args.save_path, layout_path=args.data_path,
-                         file_name=args.file_name)
+                         file_name=args.file_name, cond=args.cond, bs=args.bs)
