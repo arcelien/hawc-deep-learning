@@ -55,12 +55,22 @@ Here are some visualizations of data from our dataset, and an example of a conve
 
 <img src="./plots/ground_truth/single_ground_truth.png" width="400px"/> <img src="./plots/ground_truth/single_ground_truth_pmts.png" width="400px"/>
 
+To visualize a 2 channel image (must have time as the sceond channel) as a video, use `visualize.py`. First load and reference a .npy file containing the image as a numpy array. If multiple images are in the array, specify the image that is to be converted. Then create folder in same directory level called "imgs". Run `visualize.py`, which should fill "imgs" with around 100 images of the event.
+
+Finally to convert the images to video, run in terminal:
+
+```bash
+ffmpeg -start_number 0 -i imgs/img%00d.jpg -vcodec mpeg4 test.mp4
+```
+
+It is important to note that this last command will generally not work when in an anaconda enviroment so it is suggested to exit any enviroment before running the bash command.
+
 ## Deep learning Models and Experiments
 
 ### 1D Distribution Generation with Non-Conditional GANs
 This GAN is a simple MLP (Multi Layer Perceptron) model that has been trained exclusively on the gamma ray simulation.  It accepts a vector of random draws from an 8D standard spherical gaussian.  The output of this model is  rec.logNPE, log(rec.nHit), rec.nTankHit, rec.zenith, rec.azimuth, rec.coreX, rec.coreY, and rec.CxPE40.
 
-To run param-gen/parameterGAN.py, run gen_gamma_params("/path/to/gamma") in parse_hawc and specifcy paramters to collect in the function. Then run in `param-gen/`: 
+To run param-gen/parameterGAN.py, run gen_gamma_params("/path/to/gamma") in parse_hawc and specify paramters to collect in the function. Then run in `param-gen/Vanilla 1DGAN/`: 
 
 ```bash
 python parameterGAN.py
@@ -74,7 +84,13 @@ This model trains to near completion in less than an hour on a GeForce GTX 1080 
 ### 1D Distribution Generation with Conditional GANs
 The 1D parameter GAN can be modified slightly, allowing for conditional inputs.  Along with the 8D entropy vector, another set of input parameters can be appended.  In this case, these parameters are log(SimEvent.energyTrue), SimEvent.thetaTrue, and SimEvent.phiTrue.  These values are also included as an input to the discriminator.  During training, the GAN samples the input params from the real simulation, and generates an output.  The sampled params and the generated output are passed to the discriminator.  The output of this model is as before; rec.logNPE, log(rec.nHit), rec.nTankHit, rec.zenith, rec.azimuth, rec.coreX, rec.coreY, and rec.CxPE40.  
 
-To run this model, you should ... **to be added**
+To run this model, you should run gen_gamma_params("/path/to/gamma") in parse_hawc with the varable `params = ...` set to 11 parameter names (will generate 8 distributions from 3 conditions). Next, make 2 folders "saved" and "paramGANplots" and run in `param-gen/Conditional 1DGAN/`:
+
+```bash
+python parameterCGAN.py
+```
+
+After training, the saved models should be in the "saved" folder. Specicify the saved model by file directory in `CGANvisualization.py` and run with python to visualize the generated distributions.
 
 The effects of the conditional inputs can be seen in the following tests.  First, we left the conditional variables free and sampled the inputs from uniform distributions.  This shows how much variation the generative model can express.
 
@@ -89,7 +105,19 @@ Differences here, especially in the distributions with hard cutoffs, comes from 
 This model was trained to near completion in less than an hour on a GTX 1080 Ti
 
 ### 2D Distribution Generation with WGANs
-WIP
+We can extend the 1D GAN to the 2D domain via 2D GANs and WGANs. To increase stability, we use the WGAN model which entails simply changing the loss function.
+
+To run the 2D GAN, the data needs to first be processed by `parse_hawc.py`. To run either a vanilla (normal loss) GAN or WGAN, go to `image-gen/` and choose either `Vanilla DCGAN/` or `Wasserstein DCGAN/`. In the `Vanilla DCGAN/` there must be a "plots" and "saved" folder and in `Wasserstein DCGAN/` there must be a "tmp" folder. The generated images should go to plots and tmp respectively. Finally run
+
+```bash
+python train.py
+```
+to train the model.
+
+Here is an example of the current 2-channel GAN.
+<img src="./plots/2DGAN/2dgan_2channel.png">
+
+
 
 ### Generative Model with PixelCNN
 We can use a PixelCNN (https://arxiv.org/abs/1601.06759) model to generate very realistic PMT grid hit data. Because we can map each simulation event to a 40x40 array, we can use a generative model like PixelCNN to sample images corresponding to events.
@@ -153,4 +181,3 @@ Here are visualizations of a PixelCNN model conditioned on `rec.azimuth` for the
 <img src="./plots/pixelcnn/pixelcnn_grid_azimuth_0.png" width="800px"/>
 
 <img src="./plots/pixelcnn/pixelcnn_grid_azimuth_3.png" width="800px"/>
-

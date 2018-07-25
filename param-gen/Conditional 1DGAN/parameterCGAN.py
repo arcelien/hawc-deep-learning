@@ -20,9 +20,11 @@ class Discriminator(nn.Module):
 		super(Discriminator, self).__init__()
 		self.net = nn.Sequential(nn.Linear(class_dim+data_dim, nh),
 								 nn.ReLU(),
-								 nn.Linear(nh, nh),
-								 nn.Tanh(),		# Was previously Tanh
-								 nn.Linear(nh, 1),
+								 nn.Linear(nh, nh//2),
+								 nn.ReLU(),		
+								 nn.Linear(nh//2, nh//2),
+								 nn.ReLU(),
+								 nn.Linear(nh//2, 1),
 								 nn.Sigmoid())
 	def forward(self, x, y):
 		x = torch.cat([x, y], 1)
@@ -33,9 +35,11 @@ class Generator(nn.Module):
 		super(Generator, self).__init__()
 		self.net = nn.Sequential(nn.Linear(z_dim+class_dim, nh),
 								 nn.LeakyReLU(),
-								 nn.Linear(nh, nh),
+								 nn.Linear(nh, nh//2),
 								 nn.LeakyReLU(),
-								 nn.Linear(nh, data_dim))
+								 nn.Linear(nh//2, nh//2),
+								 nn.LeakyReLU(),
+								 nn.Linear(nh//2, data_dim))
 	def forward(self, x, y):
 		x = torch.cat([x, y], 1)
 		return self.net(x)
@@ -73,7 +77,7 @@ latent = [dd['n'](0, 1)] * z_dim			# Creates a latent space entirely sampled fro
 labels = {0: "rec.logNPE", 1: "rec.nHit", 2: "rec.nTankHit", 3: "rec.zenith", 
           4: "rec.azimuth", 5: "rec.coreX", 6: "rec.coreY", 7: "rec.CxPE40",
           8: "SimEvent.energyTrue", 9: "SimEvent.thetaTrue", 10:"SimEvent.phiTrue"}
-means   = [2.6447110e+00, 4.6803799e+00, 7.8092407e+01, 4.1693807e-01, -8.8998480e-03, 6.5917976e+01, 2.5366927e+02,  2.3263862e+00, 7.7275338e+00, 2.3912493e+01, 1.7977229e+02]  # List of means for the loaded data
+means   = [2.6447110e+00, 4.6803799e+00, 7.8092407e+01, 4.1693807e-01, -8.8998480e-03, 6.5917976e+01, 2.5366927e+02,  2.3263862e+00, 7.7275338e+00, 2.3912493e+01, 1.7977229e+02] # List of means for the loaded data
 stddevs = [0.5619153, 0.801478, 61.452538, 0.20918544, 1.8056167, 94.12724, 94.01841, 0.99879366, 1.7095443, 11.550515, 103.78041]			   									  # List of standard deviations for the loaded data
 logs    = [0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]													 																				  # Keep track of variables where we applied log	
 ## Sanity Checks ##
@@ -202,12 +206,11 @@ for epoch in range(epochs):
 			samples = np.array(samples)
 			real = real.cpu().numpy()
 
-			print('Real Means = ', [np.mean(real[:,i]) for i in range(data_dim)])
-			print('Fake Means = ', [np.mean(samples[:,i]) for i in range(data_dim)])
+			# print('Real Means = ', [np.mean(real[:,i]) for i in range(data_dim)])
+			# print('Fake Means = ', [np.mean(samples[:,i]) for i in range(data_dim)])
 
 			x = find_plot_dim(data_dim)
 			y = find_plot_dim(data_dim)
-			# y = max(data_dim - x, 1)
 			fig = plt.figure(figsize=(16, 16))
 			for i in range(data_dim):
 				plt.subplot(x, y, i+1)

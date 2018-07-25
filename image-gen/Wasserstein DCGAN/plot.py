@@ -60,8 +60,7 @@ def plot_40x40(grid, title, frame):
         plt.colorbar()
     fig.suptitle(title)
     # plt.show()
-    plt.savefig('tmp2/samples_{}.png'.format(frame))#, bbox_inches='tight', pad_inches = 0)
-    plt.close()
+    
 
 def plot_pmts(grid, title, single=None, sparse=False, layout_path="data/"):
     """

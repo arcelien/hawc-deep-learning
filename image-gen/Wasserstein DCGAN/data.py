@@ -25,25 +25,21 @@ class Dataset(Dataset):
             return trainx, trainy
 
 
-    def __init__(self, path, train=True, split_size=0.8):   # Might need to deal with image normalization or log at some point
+    def __init__(self, path, train=True, split_size=0.8, scale=23):  
         assert 0 < split_size < 1
         self.data = Dataset.load(path, train)
-        self.len = self.data[0].shape[0]             # Count the number of images
+        self.len = self.data[0].shape[0]                # Count the number of images
+        self.scale = scale                              # divide range (0-255) by some number to get data in reasonable range
         if train:
             self.len = int(self.len * split_size)
             self.data, self.labels = self.data[0][:self.len], self.data[1][:self.len]
-            # self.data[:,:,:,:1] -= np.mean(self.data[:,:,:,:1])
-            # self.data[:,:,:,1:] -= np.mean(self.data[:,:,:,1:])
-            self.data[:,:,:,:1] /= 23# np.max(self.data[:,:,:,:1])
-            self.data[:,:,:,1:] /= 23#np.max(self.data[:,:,:,1:])
+            self.data[:,:,:,:1] /= self.scale  
+            self.data[:,:,:,1:] /= self.scale
         else:
             self.len = self.len - int(self.len * split_size)
             self.data, self.labels = self.data[0][self.len:], self.data[1][self.len:]
-            # self.data[:,:,:,:1] -= np.mean(self.data[:,:,:,:1])
-            # self.data[:,:,:,1:] -= np.mean(self.data[:,:,:,1:])
-            # self.data[:,:,:,:1] /= np.max(self.data[:,:,:,:1])
-            self.data[:,:,:,:1] /= 23# np.max(self.data[:,:,:,:1])
-            self.data[:,:,:,1:] /= 23# np.max(self.data[:,:,:,1:])
+            self.data[:,:,:,:1] /= self.scale
+            self.data[:,:,:,1:] /= self.scale
     def __getitem__(self, item):
         assert self.len > item
         return self.data[item], self.labels[item]

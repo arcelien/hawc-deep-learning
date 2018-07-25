@@ -17,13 +17,14 @@ from model import Discriminator, Generator
 #------------------------------------------------#
 
 ## Declare Hyperparameters ##
-batch_size = 100
+batch_size = 32
 imgdim     = 40
 z_dim      = 20
 lr         = .005
 lr_decay   = .9999
 epochs     = 1000
 train_gpu  = True
+num_channels = 1
 ## Setup Information ##
 labels 	   = {0: 'zenith', 1: 'azimuth'}
 save_path  = './saved/'
@@ -64,7 +65,7 @@ for epoch in range(epochs):
 	for realdata, reallabel in trainloader:
 		D.train()
 		G.train()
-		realdata, reallabel = realdata.to(device), reallabel.to(device)
+		realdata, reallabel = realdata.to(device)[:,:,:,:1], reallabel.to(device)
 		D_optim.zero_grad()
 		G_optim.zero_grad() 
 		# We set threshold for both models so neither become too powerful

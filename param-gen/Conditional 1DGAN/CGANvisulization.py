@@ -27,11 +27,11 @@ class Generator(nn.Module):
 		x = torch.cat([x, y], 1)
 		return self.net(x)
 ## Varibles ##
-test_size = 100
 num_dists = 8
 num_conds = 3
+uniform_labels = False
 ## Testing ##
-model = torch.load('./saved/Gepoch2000')  # Path to where saved generator model is 
+model = torch.load('./saved/Gepoch1000')  # Path to where saved generator model is 
 labels = {0: "rec.logNPE", 1: "rec.nHit", 2: "rec.nTankHit", 3: "rec.zenith", 
           4: "rec.azimuth", 5: "rec.coreX", 6: "rec.coreY", 7: "rec.CxPE40",
           8: "SimEvent.energyTrue", 9: "SimEvent.thetaTrue", 10:"SimEvent.phiTrue"}
@@ -53,11 +53,13 @@ valid_data = np.array(valid_data)
 print valid_data.shape
 
 # Use the commented code to visualize labels sampled from a uniform distribution instead
-# z_1 = torch.empty(valid_data.shape[0], 1).uniform_(cond_range[0][0], cond_range[0][1])
-# z_2 = torch.empty(valid_data.shape[0], 1).uniform_(cond_range[1][0], cond_range[1][1])
-# z_3 = torch.empty(valid_data.shape[0], 1).uniform_(cond_range[2][0], cond_range[2][1])
-# z_label = torch.cat([z_1, z_2, z_3], dim=1).cuda()
-z_label = torch.FloatTensor(valid_data[:,-3:]).cuda()
+if uniform_labels:
+	z_1 = torch.empty(valid_data.shape[0], 1).uniform_(cond_range[0][0], cond_range[0][1])
+	z_2 = torch.empty(valid_data.shape[0], 1).uniform_(cond_range[1][0], cond_range[1][1])
+	z_3 = torch.empty(valid_data.shape[0], 1).uniform_(cond_range[2][0], cond_range[2][1])
+	z_label = torch.cat([z_1, z_2, z_3], dim=1).cuda()
+else:
+	z_label = torch.FloatTensor(valid_data[:,-3:]).cuda()
 z_noise = torch.empty(valid_data.shape[0], 50).normal_(0, 1).cuda()  				# z_dim latent size
 
 print z_label.shape
@@ -67,8 +69,6 @@ plt.figure(figsize=(15,15))
 for i in range(num_dists):
 	plt.subplot(3, 3, i+1)
 	plt.title(labels[i])
-	# realhist = valid_data[:,i]
-	# fakehist = generated[:,i]
 	realhist = (valid_data[:,i]*stddevs[i])+means[i]
 	fakehist = (generated[:,i]*stddevs[i])+means[i]
 	if (logs[i] == 1):
