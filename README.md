@@ -86,6 +86,12 @@ Histograms for the generated and actual distributions will be written to the par
 
 This model trains to near completion in less than an hour on a GeForce GTX 1080 Ti.
 
+Below is an comparison of the CDF between the real and fake distributions for rec.zenith.
+
+
+
+<img src="./plots/1DGAN/cdf_dist_zenith.png" width="600px"/>
+
 ### 1D Distribution Generation with Conditional GANs
 The 1D parameter GAN can be modified slightly, allowing for conditional inputs.  Along with the 8D entropy vector, another set of input parameters can be appended.  In this case, these parameters are log(SimEvent.energyTrue), SimEvent.thetaTrue, and SimEvent.phiTrue.  These values are also included as an input to the discriminator.  During training, the GAN samples the input params from the real simulation, and generates an output.  The sampled params and the generated output are passed to the discriminator.  The output of this model is as before; rec.logNPE, log(rec.nHit), rec.nTankHit, rec.zenith, rec.azimuth, rec.coreX, rec.coreY, and rec.CxPE40.  
 
